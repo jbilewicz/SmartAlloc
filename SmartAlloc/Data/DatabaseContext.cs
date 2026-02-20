@@ -79,6 +79,16 @@ public class DatabaseContext : IDisposable
                 CreatedDate   TEXT    NOT NULL,
                 TargetDate    TEXT    NULL
             );
+
+            CREATE TABLE IF NOT EXISTS RecurringTransactions (
+                Id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                Amount          REAL    NOT NULL,
+                CategoryName    TEXT    NOT NULL,
+                Note            TEXT    DEFAULT '',
+                Type            INTEGER NOT NULL DEFAULT 1,
+                DayOfMonth      INTEGER NOT NULL DEFAULT 1,
+                LastRunYearMonth TEXT   NULL
+            );
         ";
         cmd.ExecuteNonQuery();
 

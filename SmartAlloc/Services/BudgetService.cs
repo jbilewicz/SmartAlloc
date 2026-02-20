@@ -32,6 +32,26 @@ public class BudgetService
         return list;
     }
 
+    public Budget? GetForCategory(int year, int month, string categoryName)
+    {
+        var conn = _db.GetConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT * FROM Budgets WHERE Year=@y AND Month=@m AND CategoryName=@cat LIMIT 1";
+        cmd.Parameters.AddWithValue("@y", year);
+        cmd.Parameters.AddWithValue("@m", month);
+        cmd.Parameters.AddWithValue("@cat", categoryName);
+        using var reader = cmd.ExecuteReader();
+        if (!reader.Read()) return null;
+        return new Budget
+        {
+            Id = reader.GetInt32(0),
+            CategoryName = reader.GetString(1),
+            MonthlyLimit = reader.GetDecimal(2),
+            Month = reader.GetInt32(3),
+            Year = reader.GetInt32(4)
+        };
+    }
+
     public void Upsert(Budget b)
     {
         var conn = _db.GetConnection();

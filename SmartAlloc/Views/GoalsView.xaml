@@ -130,7 +130,7 @@
 
                                 <!-- Progress bar -->
                                 <ProgressBar Grid.Row="2"
-                                             Value="{Binding Progress}"
+                                             Value="{Binding Progress, Mode=OneWay}"
                                              Maximum="100"
                                              Style="{StaticResource ProgressBarStyle}"
                                              Height="10" Margin="0,0,0,12">
@@ -156,8 +156,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBox Grid.Column="0"
-                                             Text="{Binding DataContext.DepositAmount,
-                                                RelativeSource={RelativeSource AncestorType=ItemsControl},
+                                             Text="{Binding DepositAmount,
                                                 StringFormat={}{0:N2}, UpdateSourceTrigger=PropertyChanged}"
                                              Style="{StaticResource DarkInputStyle}"/>
                                     <Button Grid.Column="2"

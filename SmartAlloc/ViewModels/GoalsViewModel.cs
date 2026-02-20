@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace SmartAlloc.ViewModels;
 
-public class GoalItemVM : ObservableObject
+public partial class GoalItemVM : ObservableObject
 {
     public Goal Goal { get; set; } = null!;
     public string PredictedDate { get; set; } = "";
@@ -16,6 +16,8 @@ public class GoalItemVM : ObservableObject
     public string StatusColor => Progress >= 100 ? "#27AE60"
                                 : Progress >= 50 ? "#F39C12"
                                 : "#6C63FF";
+
+    [ObservableProperty] private decimal _depositAmount;
 }
 
 public partial class GoalsViewModel : BaseViewModel
@@ -25,7 +27,6 @@ public partial class GoalsViewModel : BaseViewModel
 
     [ObservableProperty] private ObservableCollection<GoalItemVM> _goalItems = [];
     [ObservableProperty] private Goal? _selectedGoal;
-    [ObservableProperty] private decimal _depositAmount;
 
     [ObservableProperty] private string _newName = string.Empty;
     [ObservableProperty] private string _newIcon = "🎯";
@@ -89,9 +90,9 @@ public partial class GoalsViewModel : BaseViewModel
     [RelayCommand]
     private void Deposit(GoalItemVM item)
     {
-        if (DepositAmount <= 0 || item == null) return;
-        _goalService.AddFunds(item.Goal.Id, DepositAmount);
-        DepositAmount = 0;
+        if (item == null || item.DepositAmount <= 0) return;
+        _goalService.AddFunds(item.Goal.Id, item.DepositAmount);
+        item.DepositAmount = 0;
         Load();
     }
 

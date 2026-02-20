@@ -9,6 +9,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -187,6 +188,109 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
+        </Border>
+        <!-- Recurring Transactions -->
+        <Border Grid.Row="3" Style="{StaticResource GlassCardStyle}" Margin="0,16,0,0">
+            <Expander Foreground="{DynamicResource TextPrimaryBrush}" IsExpanded="False">
+                <Expander.Header>
+                    <TextBlock Text="&#x1F501; Recurring transactions" FontSize="14" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                </Expander.Header>
+                <Grid Margin="0,16,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Add recurring form -->
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Amount (PLN)" Style="{StaticResource LabelStyle}"/>
+                            <TextBox Text="{Binding NewRecurringAmount, StringFormat={}{0:N2}, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource DarkInputStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Category" Style="{StaticResource LabelStyle}"/>
+                            <ComboBox ItemsSource="{Binding Categories}"
+                                      SelectedItem="{Binding NewRecurringCategory}"
+                                      Style="{StaticResource DarkComboStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="4">
+                            <TextBlock Text="Note" Style="{StaticResource LabelStyle}"/>
+                            <TextBox Text="{Binding NewRecurringNote, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource DarkInputStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="6">
+                            <TextBlock Text="Day (1-28)" Style="{StaticResource LabelStyle}"/>
+                            <TextBox Text="{Binding NewRecurringDay, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource DarkInputStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="8" VerticalAlignment="Bottom">
+                            <Border Style="{StaticResource TagStyle}">
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton Content="Expense" IsChecked="{Binding NewRecurringIsExpense}"
+                                                 Foreground="{StaticResource DangerBrush}" Margin="0,0,8,0"/>
+                                    <RadioButton Content="Income" IsChecked="{Binding NewRecurringIsIncome}"
+                                                 Foreground="{StaticResource SuccessBrush}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <Button Grid.Column="10"
+                                Content="Add"
+                                Command="{Binding AddRecurringCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                VerticalAlignment="Bottom"/>
+                    </Grid>
+
+                    <!-- Recurring list -->
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding RecurringItems}"
+                              Style="{StaticResource DarkDataGridStyle}"
+                              AutoGenerateColumns="False" IsReadOnly="True"
+                              CanUserReorderColumns="False" CanUserResizeRows="False"
+                              MaxHeight="180">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Category" Binding="{Binding CategoryName}" Width="*"/>
+                            <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*"/>
+                            <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat={}{0:N2} PLN}" Width="120"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding TypeLabel}" Width="80"/>
+                            <DataGridTextColumn Header="Day" Binding="{Binding DayOfMonth}" Width="50"/>
+                            <DataGridTemplateColumn Header="" Width="50">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="&#x2715;"
+                                                Command="{Binding DataContext.DeleteRecurringCommand,
+                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Background="Transparent" BorderThickness="0"
+                                                Foreground="{DynamicResource TextMutedBrush}"
+                                                Cursor="Hand" FontSize="12"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Expander>
         </Border>
     </Grid>
 </UserControl>

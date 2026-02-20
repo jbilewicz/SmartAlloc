@@ -49,16 +49,22 @@
                                  Style="{StaticResource DarkInputStyle}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="6">
-                        <TextBlock Text="Month" Style="{StaticResource LabelStyle}"/>
-                        <TextBox Text="{Binding SelectedMonth, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource DarkInputStyle}"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="8">
-                        <TextBlock Text="Year" Style="{StaticResource LabelStyle}"/>
-                        <TextBox Text="{Binding SelectedYear, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource DarkInputStyle}"/>
+                    <StackPanel Grid.Column="6" Grid.ColumnSpan="3" VerticalAlignment="Bottom">
+                        <TextBlock Text="Period" Style="{StaticResource LabelStyle}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="&#8249;"
+                                    Command="{Binding PreviousMonthCommand}"
+                                    Style="{StaticResource OutlineButtonStyle}"
+                                    Width="30" Padding="2,4" FontSize="16"/>
+                            <TextBlock Text="{Binding MonthLabel}"
+                                       FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       VerticalAlignment="Center" Margin="10,0"/>
+                            <Button Content="&#8250;"
+                                    Command="{Binding NextMonthCommand}"
+                                    Style="{StaticResource OutlineButtonStyle}"
+                                    Width="30" Padding="2,4" FontSize="16"/>
+                        </StackPanel>
                     </StackPanel>
 
                     <Button Grid.Column="10"

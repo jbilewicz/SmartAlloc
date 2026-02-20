@@ -11,6 +11,8 @@ public partial class TransactionsViewModel : BaseViewModel
 {
     private readonly TransactionService _txService;
     private readonly CategoryService _catService;
+    private readonly BudgetService _budgetService;
+    private readonly RecurringTransactionService _recurringService;
 
     [ObservableProperty] private ObservableCollection<Transaction> _transactions = [];
     [ObservableProperty] private ObservableCollection<string> _categories = [];
@@ -27,10 +29,22 @@ public partial class TransactionsViewModel : BaseViewModel
     [ObservableProperty] private string _filterText = string.Empty;
     [ObservableProperty] private string _filterCategory = "All";
 
-    public TransactionsViewModel(TransactionService txService, CategoryService catService)
+    // Recurring
+    [ObservableProperty] private ObservableCollection<RecurringTransaction> _recurringItems = [];
+    [ObservableProperty] private decimal _newRecurringAmount;
+    [ObservableProperty] private string _newRecurringCategory = string.Empty;
+    [ObservableProperty] private string _newRecurringNote = string.Empty;
+    [ObservableProperty] private bool _newRecurringIsExpense = true;
+    [ObservableProperty] private bool _newRecurringIsIncome;
+    [ObservableProperty] private int _newRecurringDay = 1;
+
+    public TransactionsViewModel(TransactionService txService, CategoryService catService,
+                                  BudgetService budgetService, RecurringTransactionService recurringService)
     {
         _txService = txService;
         _catService = catService;
+        _budgetService = budgetService;
+        _recurringService = recurringService;
     }
 
     [RelayCommand]
@@ -40,9 +54,12 @@ public partial class TransactionsViewModel : BaseViewModel
         Categories.Clear();
         Categories.Add("All");
         foreach (var c in cats) Categories.Add(c.Name);
-        if (!string.IsNullOrEmpty(Categories.FirstOrDefault()))
-            NewCategory = cats.FirstOrDefault()?.Name ?? "";
+        var firstName = cats.FirstOrDefault()?.Name ?? "";
+        if (!string.IsNullOrEmpty(firstName))
+            NewCategory = firstName;
+        NewRecurringCategory = firstName;
         RefreshTransactions();
+        RefreshRecurring();
     }
 
     private void RefreshTransactions()
@@ -83,10 +100,32 @@ public partial class TransactionsViewModel : BaseViewModel
             Type = IsIncome ? TransactionType.Income : TransactionType.Expense
         });
 
+        var addedCategory = NewCategory;
+        var addedIsExpense = IsExpense;
         NewAmount = 0;
         NewNote = string.Empty;
         NewDate = DateTime.Today;
         RefreshTransactions();
+        if (addedIsExpense)
+            CheckBudgetAlert(addedCategory);
+    }
+
+    private void CheckBudgetAlert(string categoryName)
+    {
+        var today = DateTime.Today;
+        var budget = _budgetService.GetForCategory(today.Year, today.Month, categoryName);
+        if (budget == null) return;
+        var expenses = _txService.GetExpensesByCategory(today.Year, today.Month);
+        expenses.TryGetValue(categoryName, out var spent);
+        var pct = budget.MonthlyLimit > 0 ? (double)(spent / budget.MonthlyLimit * 100) : 0;
+        if (pct >= 100)
+            MessageBox.Show(
+                $"Budget exceeded for \"{categoryName}\"!\nSpent: {spent:N2} PLN  /  Limit: {budget.MonthlyLimit:N2} PLN",
+                "Budget Exceeded", MessageBoxButton.OK, MessageBoxImage.Warning);
+        else if (pct >= 90)
+            MessageBox.Show(
+                $"Warning: {pct:N0}% of monthly budget used for \"{categoryName}\".\nSpent: {spent:N2} PLN  /  Limit: {budget.MonthlyLimit:N2} PLN",
+                "Budget Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 
     [RelayCommand]
@@ -105,4 +144,42 @@ public partial class TransactionsViewModel : BaseViewModel
 
     partial void OnFilterTextChanged(string value) => RefreshTransactions();
     partial void OnFilterCategoryChanged(string value) => RefreshTransactions();
+
+    [RelayCommand]
+    private void AddRecurring()
+    {
+        if (NewRecurringAmount <= 0 || string.IsNullOrWhiteSpace(NewRecurringCategory)) return;
+        if (NewRecurringDay < 1 || NewRecurringDay > 28)
+        {
+            MessageBox.Show("Day must be between 1 and 28.", "Validation",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        _recurringService.Add(new RecurringTransaction
+        {
+            Amount = NewRecurringAmount,
+            CategoryName = NewRecurringCategory,
+            Note = NewRecurringNote,
+            Type = NewRecurringIsIncome ? TransactionType.Income : TransactionType.Expense,
+            DayOfMonth = NewRecurringDay
+        });
+        NewRecurringAmount = 0;
+        NewRecurringNote = string.Empty;
+        NewRecurringDay = 1;
+        RefreshRecurring();
+    }
+
+    [RelayCommand]
+    private void DeleteRecurring(RecurringTransaction item)
+    {
+        _recurringService.Delete(item.Id);
+        RefreshRecurring();
+    }
+
+    private void RefreshRecurring()
+    {
+        RecurringItems.Clear();
+        foreach (var r in _recurringService.GetAll())
+            RecurringItems.Add(r);
+    }
 }

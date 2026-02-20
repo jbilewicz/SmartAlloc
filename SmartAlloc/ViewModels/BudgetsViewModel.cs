@@ -30,8 +30,16 @@ public partial class BudgetsViewModel : BaseViewModel
     [ObservableProperty] private ObservableCollection<string> _categories = [];
     [ObservableProperty] private string _selectedCategory = string.Empty;
     [ObservableProperty] private decimal _newLimit;
+
+    [NotifyPropertyChangedFor(nameof(MonthLabel))]
     [ObservableProperty] private int _selectedMonth = DateTime.Today.Month;
+
+    [NotifyPropertyChangedFor(nameof(MonthLabel))]
     [ObservableProperty] private int _selectedYear = DateTime.Today.Year;
+
+    public string MonthLabel =>
+        new DateTime(SelectedYear, SelectedMonth, 1)
+            .ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture);
 
     public BudgetsViewModel(BudgetService budgetService, TransactionService txService, CategoryService catService)
     {
@@ -92,4 +100,18 @@ public partial class BudgetsViewModel : BaseViewModel
 
     partial void OnSelectedMonthChanged(int value) => RefreshBudgets();
     partial void OnSelectedYearChanged(int value) => RefreshBudgets();
+
+    [RelayCommand]
+    private void PreviousMonth()
+    {
+        if (SelectedMonth == 1) { SelectedMonth = 12; SelectedYear--; }
+        else SelectedMonth--;
+    }
+
+    [RelayCommand]
+    private void NextMonth()
+    {
+        if (SelectedMonth == 12) { SelectedMonth = 1; SelectedYear++; }
+        else SelectedMonth++;
+    }
 }

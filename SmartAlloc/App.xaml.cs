@@ -35,6 +35,7 @@ public partial class App : Application
         services.AddSingleton<CurrencyService>();
         services.AddSingleton<ReportService>();
         services.AddSingleton<ThemeService>();
+        services.AddSingleton<RecurringTransactionService>();
 
         services.AddSingleton<DashboardViewModel>();
         services.AddSingleton<TransactionsViewModel>();
@@ -52,6 +53,13 @@ public partial class App : Application
         mainWindow.Show();
 
         await mainVM.InitializeAsync();
+
+        var recurringService = Services.GetRequiredService<RecurringTransactionService>();
+        int processed = recurringService.ProcessDue();
+        if (processed > 0)
+            MessageBox.Show(
+                $"{processed} recurring transaction{(processed > 1 ? "s" : "")} were automatically added for this month.",
+                "Recurring Transactions", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     protected override void OnExit(ExitEventArgs e)
