@@ -4,163 +4,175 @@
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
              Background="{DynamicResource BackgroundBrush}">
 
-    <ScrollViewer Style="{StaticResource ScrollViewerStyle}">
-        <Grid Margin="28,20,28,28">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+    <!-- No ScrollViewer — outer Grid fills full available height so charts can use * -->
+    <Grid Margin="28,20,28,28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Header -->
+            <RowDefinition Height="Auto"/>  <!-- KPI Cards -->
+            <RowDefinition Height="Auto"/>  <!-- NBP bar -->
+            <RowDefinition Height="*"/>     <!-- Charts -->
+        </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <StackPanel Grid.Row="0" Margin="0,0,0,4">
-                <TextBlock Text="Dashboard" Style="{StaticResource PageTitleStyle}"/>
-                <TextBlock Text="Your financial overview" Style="{StaticResource PageSubtitleStyle}"/>
-            </StackPanel>
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,4">
+            <TextBlock Text="Dashboard" Style="{StaticResource PageTitleStyle}"/>
+            <TextBlock Text="Your financial overview" Style="{StaticResource PageSubtitleStyle}"/>
+        </StackPanel>
 
-            <!-- KPI Cards -->
-            <Grid Grid.Row="1" Margin="0,0,0,20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+        <!-- KPI Cards -->
+        <Grid Grid.Row="1" Margin="0,0,0,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource KpiCardStyle}"
-                        Background="{DynamicResource KpiBalanceGradientBrush}">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <Border Width="32" Height="32" CornerRadius="8"
-                                    Background="{StaticResource PrimaryGradientBrush}" Margin="0,0,10,0">
-                                <TextBlock Text="💰" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Balance" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <TextBlock Text="{Binding Balance, StringFormat={}{0:N2} zł}"
-                                   FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                        <TextBlock Text="{Binding ConvertedBalance}" FontSize="12"
-                                   Foreground="{DynamicResource AccentBrush}" Margin="0,4,0,0"/>
+            <Border Grid.Column="0" Style="{StaticResource KpiCardStyle}"
+                    Background="{DynamicResource KpiBalanceGradientBrush}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Border Width="32" Height="32" CornerRadius="8"
+                                Background="{StaticResource PrimaryGradientBrush}" Margin="0,0,10,0">
+                            <TextBlock Text="💰" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Balance" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Border>
-
-                <Border Grid.Column="2" Style="{StaticResource KpiCardStyle}"
-                        Background="{DynamicResource KpiIncomeGradientBrush}">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <Border Width="32" Height="32" CornerRadius="8"
-                                    Background="{StaticResource IncomeGradientBrush}" Margin="0,0,10,0">
-                                <TextBlock Text="📈" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Income" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <TextBlock Text="{Binding TotalIncome, StringFormat={}{0:N2} zł}"
-                                   FontSize="22" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="4" Style="{StaticResource KpiCardStyle}"
-                        Background="{DynamicResource KpiExpenseGradientBrush}">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <Border Width="32" Height="32" CornerRadius="8"
-                                    Background="{StaticResource ExpenseGradientBrush}" Margin="0,0,10,0">
-                                <TextBlock Text="📉" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Expenses" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <TextBlock Text="{Binding TotalExpense, StringFormat={}{0:N2} zł}"
-                                   FontSize="22" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Currency Converter Card -->
-                <Border Grid.Column="6" Style="{StaticResource KpiCardStyle}"
-                        Background="{DynamicResource KpiConverterGradientBrush}">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <Border Width="32" Height="32" CornerRadius="8" Margin="0,0,10,0">
-                                <Border.Background>
-                                    <LinearGradientBrush>
-                                        <GradientStop Color="#A29BFE" Offset="0"/>
-                                        <GradientStop Color="#6C63FF" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <TextBlock Text="💱" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Converter" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <ComboBox ItemsSource="{Binding Currencies}"
-                                  SelectedItem="{Binding SelectedCurrency}"
-                                  Style="{StaticResource DarkComboStyle}"
-                                  Margin="0,0,0,6"/>
-                        <TextBlock Text="{Binding ConvertedBalance}"
-                                   FontSize="15" FontWeight="Bold"
-                                   Foreground="{DynamicResource AccentBrush}"/>
-                        <Button Content="🔄 Refresh rates"
-                                Command="{Binding RefreshRatesCommand}"
-                                Style="{StaticResource OutlineButtonStyle}"
-                                Padding="8,5" FontSize="11" Margin="0,8,0,0"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-
-            <!-- NBP Rate Info -->
-            <Border Grid.Row="2" Style="{StaticResource GlassCardStyle}" Margin="0,0,0,20" Padding="14,10">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="🏦 " FontSize="14"/>
-                    <TextBlock Text="{Binding RateInfo}" FontSize="11"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
-                               VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding LastUpdated}" FontSize="10"
-                               Foreground="{DynamicResource TextMutedBrush}"
-                               VerticalAlignment="Center" Margin="16,0,0,0"/>
+                    <TextBlock Text="{Binding Balance, StringFormat={}{0:N2} zł}"
+                               FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding ConvertedBalance}" FontSize="12"
+                               Foreground="{DynamicResource AccentBrush}" Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>
 
-            <!-- Charts Row -->
-            <Grid Grid.Row="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="1.4*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Pie Chart -->
-                <Border Grid.Column="0" Style="{StaticResource GlassCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Expense breakdown" Style="{StaticResource SectionTitleStyle}"/>
-                        <TextBlock Text="Current month" FontSize="11"
-                                   Foreground="{DynamicResource TextMutedBrush}" Margin="0,-8,0,12"/>
-                        <lvc:PieChart Series="{Binding PieSeries}"
-                                      Height="260"
-                                      LegendPosition="Right"
-                                      LegendTextPaint="{Binding LegendTextPaint}"
-                                      UseLayoutRounding="True"
-                                      RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+            <Border Grid.Column="2" Style="{StaticResource KpiCardStyle}"
+                    Background="{DynamicResource KpiIncomeGradientBrush}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Border Width="32" Height="32" CornerRadius="8"
+                                Background="{StaticResource IncomeGradientBrush}" Margin="0,0,10,0">
+                            <TextBlock Text="📈" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Income" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Border>
+                    <TextBlock Text="{Binding TotalIncome, StringFormat={}{0:N2} zł}"
+                               FontSize="22" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}"
+                               TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </Border>
 
-                <!-- Line Chart -->
-                <Border Grid.Column="2" Style="{StaticResource GlassCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Balance history" Style="{StaticResource SectionTitleStyle}"/>
-                        <TextBlock Text="Last 6 months" FontSize="11"
-                                   Foreground="{DynamicResource TextMutedBrush}" Margin="0,-8,0,12"/>
-                        <lvc:CartesianChart Series="{Binding LineSeries}"
-                                            XAxes="{Binding XAxes}"
-                                            YAxes="{Binding YAxes}"
-                                            Height="260"
-                                            ZoomMode="X"
-                                            UseLayoutRounding="True"
-                                            RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+            <Border Grid.Column="4" Style="{StaticResource KpiCardStyle}"
+                    Background="{DynamicResource KpiExpenseGradientBrush}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Border Width="32" Height="32" CornerRadius="8"
+                                Background="{StaticResource ExpenseGradientBrush}" Margin="0,0,10,0">
+                            <TextBlock Text="📉" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Expenses" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Border>
-            </Grid>
+                    <TextBlock Text="{Binding TotalExpense, StringFormat={}{0:N2} zł}"
+                               FontSize="22" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}"
+                               TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Currency Converter Card -->
+            <Border Grid.Column="6" Style="{StaticResource KpiCardStyle}"
+                    Background="{DynamicResource KpiConverterGradientBrush}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Border Width="32" Height="32" CornerRadius="8" Margin="0,0,10,0">
+                            <Border.Background>
+                                <LinearGradientBrush>
+                                    <GradientStop Color="#A29BFE" Offset="0"/>
+                                    <GradientStop Color="#6C63FF" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <TextBlock Text="💱" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Converter" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ComboBox ItemsSource="{Binding Currencies}"
+                              SelectedItem="{Binding SelectedCurrency}"
+                              Style="{StaticResource DarkComboStyle}"
+                              Margin="0,0,0,6"/>
+                    <TextBlock Text="{Binding ConvertedBalance}"
+                               FontSize="15" FontWeight="Bold"
+                               Foreground="{DynamicResource AccentBrush}"/>
+                    <Button Content="🔄 Refresh rates"
+                            Command="{Binding RefreshRatesCommand}"
+                            Style="{StaticResource OutlineButtonStyle}"
+                            Padding="8,5" FontSize="11" Margin="0,8,0,0"/>
+                </StackPanel>
+            </Border>
         </Grid>
-    </ScrollViewer>
+
+        <!-- NBP Rate Info -->
+        <Border Grid.Row="2" Style="{StaticResource GlassCardStyle}" Margin="0,0,0,14" Padding="14,10">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="🏦 " FontSize="14"/>
+                <TextBlock Text="{Binding RateInfo}" FontSize="11"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding LastUpdated}" FontSize="10"
+                           Foreground="{DynamicResource TextMutedBrush}"
+                           VerticalAlignment="Center" Margin="16,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Charts Row — Height="*" fills remaining space, charts stretch inside -->
+        <Grid Grid.Row="3" MinHeight="200">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="1.4*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Pie Chart -->
+            <Border Grid.Column="0" Style="{StaticResource GlassCardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Expense breakdown" Style="{StaticResource SectionTitleStyle}"/>
+                    <TextBlock Grid.Row="1" Text="Current month" FontSize="11"
+                               Foreground="{DynamicResource TextMutedBrush}" Margin="0,-8,0,12"/>
+                    <lvc:PieChart Grid.Row="2"
+                                  Series="{Binding PieSeries}"
+                                  MinHeight="160"
+                                  LegendPosition="Right"
+                                  LegendTextPaint="{Binding LegendTextPaint}"
+                                  UseLayoutRounding="True"/>
+                </Grid>
+            </Border>
+
+            <!-- Line Chart -->
+            <Border Grid.Column="2" Style="{StaticResource GlassCardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Balance history" Style="{StaticResource SectionTitleStyle}"/>
+                    <TextBlock Grid.Row="1" Text="Last 6 months" FontSize="11"
+                               Foreground="{DynamicResource TextMutedBrush}" Margin="0,-8,0,12"/>
+                    <lvc:CartesianChart Grid.Row="2"
+                                        Series="{Binding LineSeries}"
+                                        XAxes="{Binding XAxes}"
+                                        YAxes="{Binding YAxes}"
+                                        MinHeight="160"
+                                        ZoomMode="X"
+                                        UseLayoutRounding="True"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
 </UserControl>

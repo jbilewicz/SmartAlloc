@@ -36,12 +36,19 @@ public partial class App : Application
         services.AddSingleton<ReportService>();
         services.AddSingleton<ThemeService>();
         services.AddSingleton<RecurringTransactionService>();
+        services.AddSingleton<SnackbarService>();
+        services.AddSingleton<AuthService>();
+        services.AddSingleton<CurrentUserService>();
+        services.AddSingleton<BackupService>();
 
         services.AddSingleton<DashboardViewModel>();
         services.AddSingleton<TransactionsViewModel>();
         services.AddSingleton<BudgetsViewModel>();
         services.AddSingleton<GoalsViewModel>();
+        services.AddSingleton<StatisticsViewModel>();
+        services.AddSingleton<SettingsViewModel>();
         services.AddSingleton<MainViewModel>();
+        services.AddTransient<LoginViewModel>();
 
         services.AddSingleton<MainWindow>();
 
@@ -50,16 +57,15 @@ public partial class App : Application
         var mainVM = Services.GetRequiredService<MainViewModel>();
         var mainWindow = Services.GetRequiredService<MainWindow>();
         mainWindow.DataContext = mainVM;
+        mainWindow.Initialize(mainVM);
+
+        var snackbar = Services.GetRequiredService<SnackbarService>();
+        mainWindow.SnackbarElement.MessageQueue = snackbar.MessageQueue;
+
+        var loginVM = Services.GetRequiredService<LoginViewModel>();
+        mainWindow.ShowLoginOverlay(loginVM);
+
         mainWindow.Show();
-
-        await mainVM.InitializeAsync();
-
-        var recurringService = Services.GetRequiredService<RecurringTransactionService>();
-        int processed = recurringService.ProcessDue();
-        if (processed > 0)
-            MessageBox.Show(
-                $"{processed} recurring transaction{(processed > 1 ? "s" : "")} were automatically added for this month.",
-                "Recurring Transactions", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     protected override void OnExit(ExitEventArgs e)

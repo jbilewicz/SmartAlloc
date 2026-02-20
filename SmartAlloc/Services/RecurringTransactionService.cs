@@ -8,19 +8,24 @@ public class RecurringTransactionService
 {
     private readonly DatabaseContext _db;
     private readonly TransactionService _txService;
+    private readonly CurrentUserService _currentUser;
 
-    public RecurringTransactionService(DatabaseContext db, TransactionService txService)
+    public RecurringTransactionService(DatabaseContext db, TransactionService txService, CurrentUserService currentUser)
     {
         _db = db;
         _txService = txService;
+        _currentUser = currentUser;
     }
+
+    private int Uid => _currentUser.CurrentUserId;
 
     public List<RecurringTransaction> GetAll()
     {
         var list = new List<RecurringTransaction>();
         var conn = _db.GetConnection();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM RecurringTransactions ORDER BY CategoryName";
+        cmd.CommandText = "SELECT * FROM RecurringTransactions WHERE UserId=@uid ORDER BY CategoryName";
+        cmd.Parameters.AddWithValue("@uid", Uid);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
             list.Add(Map(reader));
@@ -32,13 +37,14 @@ public class RecurringTransactionService
         var conn = _db.GetConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            INSERT INTO RecurringTransactions (Amount, CategoryName, Note, Type, DayOfMonth)
-            VALUES (@amount, @cat, @note, @type, @day)";
+            INSERT INTO RecurringTransactions (Amount, CategoryName, Note, Type, DayOfMonth, UserId)
+            VALUES (@amount, @cat, @note, @type, @day, @uid)";
         cmd.Parameters.AddWithValue("@amount", r.Amount);
         cmd.Parameters.AddWithValue("@cat", r.CategoryName);
         cmd.Parameters.AddWithValue("@note", r.Note);
         cmd.Parameters.AddWithValue("@type", (int)r.Type);
         cmd.Parameters.AddWithValue("@day", r.DayOfMonth);
+        cmd.Parameters.AddWithValue("@uid", Uid);
         cmd.ExecuteNonQuery();
     }
 
@@ -46,15 +52,12 @@ public class RecurringTransactionService
     {
         var conn = _db.GetConnection();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "DELETE FROM RecurringTransactions WHERE Id=@id";
+        cmd.CommandText = "DELETE FROM RecurringTransactions WHERE Id=@id AND UserId=@uid";
         cmd.Parameters.AddWithValue("@id", id);
+        cmd.Parameters.AddWithValue("@uid", Uid);
         cmd.ExecuteNonQuery();
     }
 
-    /// <summary>
-    /// Adds a transaction for every recurring entry whose DayOfMonth has passed
-    /// this month and hasn't been processed yet. Returns the count of added transactions.
-    /// </summary>
     public int ProcessDue()
     {
         var today = DateTime.Today;

@@ -9,6 +9,7 @@ public class Goal
     public decimal CurrentAmount { get; set; }
     public DateTime CreatedDate { get; set; }
     public DateTime? TargetDate { get; set; }
+    public int UserId { get; set; }
 
     public double ProgressPercent =>
         TargetAmount > 0 ? Math.Min(100, (double)(CurrentAmount / TargetAmount * 100)) : 0;

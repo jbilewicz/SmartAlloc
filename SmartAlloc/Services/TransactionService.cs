@@ -7,15 +7,23 @@ namespace SmartAlloc.Services;
 public class TransactionService
 {
     private readonly DatabaseContext _db;
+    private readonly CurrentUserService _currentUser;
 
-    public TransactionService(DatabaseContext db) => _db = db;
+    public TransactionService(DatabaseContext db, CurrentUserService currentUser)
+    {
+        _db = db;
+        _currentUser = currentUser;
+    }
+
+    private int Uid => _currentUser.CurrentUserId;
 
     public List<Transaction> GetAll()
     {
         var list = new List<Transaction>();
         var conn = _db.GetConnection();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM Transactions ORDER BY Date DESC";
+        cmd.CommandText = "SELECT * FROM Transactions WHERE UserId=@uid ORDER BY Date DESC";
+        cmd.Parameters.AddWithValue("@uid", Uid);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
             list.Add(Map(reader));
@@ -29,9 +37,11 @@ public class TransactionService
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
             SELECT * FROM Transactions
-            WHERE strftime('%Y', Date) = @year
+            WHERE UserId=@uid
+              AND strftime('%Y', Date) = @year
               AND strftime('%m', Date) = @month
             ORDER BY Date DESC";
+        cmd.Parameters.AddWithValue("@uid", Uid);
         cmd.Parameters.AddWithValue("@year", year.ToString());
         cmd.Parameters.AddWithValue("@month", month.ToString("D2"));
         using var reader = cmd.ExecuteReader();
@@ -45,13 +55,14 @@ public class TransactionService
         var conn = _db.GetConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            INSERT INTO Transactions (Amount, Date, CategoryName, Note, Type)
-            VALUES (@amount, @date, @cat, @note, @type)";
+            INSERT INTO Transactions (Amount, Date, CategoryName, Note, Type, UserId)
+            VALUES (@amount, @date, @cat, @note, @type, @uid)";
         cmd.Parameters.AddWithValue("@amount", t.Amount);
         cmd.Parameters.AddWithValue("@date", t.Date.ToString("yyyy-MM-dd"));
         cmd.Parameters.AddWithValue("@cat", t.CategoryName);
         cmd.Parameters.AddWithValue("@note", t.Note);
         cmd.Parameters.AddWithValue("@type", (int)t.Type);
+        cmd.Parameters.AddWithValue("@uid", Uid);
         cmd.ExecuteNonQuery();
     }
 
@@ -59,8 +70,9 @@ public class TransactionService
     {
         var conn = _db.GetConnection();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "DELETE FROM Transactions WHERE Id = @id";
+        cmd.CommandText = "DELETE FROM Transactions WHERE Id = @id AND UserId=@uid";
         cmd.Parameters.AddWithValue("@id", id);
+        cmd.Parameters.AddWithValue("@uid", Uid);
         cmd.ExecuteNonQuery();
     }
 
@@ -68,11 +80,31 @@ public class TransactionService
     public decimal GetTotalExpense() => GetSum(TransactionType.Expense);
     public decimal GetBalance() => GetTotalIncome() - GetTotalExpense();
 
+    public decimal GetMonthlyIncome(int year, int month) => GetMonthlySum(year, month, TransactionType.Income);
+    public decimal GetMonthlyExpense(int year, int month) => GetMonthlySum(year, month, TransactionType.Expense);
+
+    private decimal GetMonthlySum(int year, int month, TransactionType type)
+    {
+        var conn = _db.GetConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT COALESCE(SUM(Amount),0) FROM Transactions
+            WHERE UserId=@uid AND Type = @type
+              AND strftime('%Y', Date) = @y
+              AND strftime('%m', Date) = @m";
+        cmd.Parameters.AddWithValue("@uid", Uid);
+        cmd.Parameters.AddWithValue("@type", (int)type);
+        cmd.Parameters.AddWithValue("@y", year.ToString());
+        cmd.Parameters.AddWithValue("@m", month.ToString("D2"));
+        return Convert.ToDecimal(cmd.ExecuteScalar());
+    }
+
     private decimal GetSum(TransactionType type)
     {
         var conn = _db.GetConnection();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT COALESCE(SUM(Amount),0) FROM Transactions WHERE Type = @type";
+        cmd.CommandText = "SELECT COALESCE(SUM(Amount),0) FROM Transactions WHERE UserId=@uid AND Type = @type";
+        cmd.Parameters.AddWithValue("@uid", Uid);
         cmd.Parameters.AddWithValue("@type", (int)type);
         return Convert.ToDecimal(cmd.ExecuteScalar());
     }
@@ -90,7 +122,9 @@ public class TransactionService
                     COALESCE(SUM(CASE WHEN Type=0 THEN Amount ELSE 0 END), 0) -
                     COALESCE(SUM(CASE WHEN Type=1 THEN Amount ELSE 0 END), 0)
                 FROM Transactions
-                WHERE strftime('%Y', Date)=@y AND strftime('%m', Date)=@m";
+                WHERE UserId=@uid
+                  AND strftime('%Y', Date)=@y AND strftime('%m', Date)=@m";
+            cmd.Parameters.AddWithValue("@uid", Uid);
             cmd.Parameters.AddWithValue("@y", d.Year.ToString());
             cmd.Parameters.AddWithValue("@m", d.Month.ToString("D2"));
             var val = Convert.ToDecimal(cmd.ExecuteScalar());
@@ -107,10 +141,11 @@ public class TransactionService
         cmd.CommandText = @"
             SELECT CategoryName, SUM(Amount) as Total
             FROM Transactions
-            WHERE Type=1
+            WHERE UserId=@uid AND Type=1
               AND strftime('%Y', Date)=@y
               AND strftime('%m', Date)=@m
             GROUP BY CategoryName";
+        cmd.Parameters.AddWithValue("@uid", Uid);
         cmd.Parameters.AddWithValue("@y", year.ToString());
         cmd.Parameters.AddWithValue("@m", month.ToString("D2"));
         using var reader = cmd.ExecuteReader();
@@ -132,7 +167,9 @@ public class TransactionService
                     COALESCE(SUM(CASE WHEN Type=0 THEN Amount ELSE 0 END), 0) -
                     COALESCE(SUM(CASE WHEN Type=1 THEN Amount ELSE 0 END), 0)
                 FROM Transactions
-                WHERE strftime('%Y', Date)=@y AND strftime('%m', Date)=@m";
+                WHERE UserId=@uid
+                  AND strftime('%Y', Date)=@y AND strftime('%m', Date)=@m";
+            cmd.Parameters.AddWithValue("@uid", Uid);
             cmd.Parameters.AddWithValue("@y", d.Year.ToString());
             cmd.Parameters.AddWithValue("@m", d.Month.ToString("D2"));
             total += Convert.ToDecimal(cmd.ExecuteScalar());

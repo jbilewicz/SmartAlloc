@@ -24,6 +24,7 @@ public partial class GoalsViewModel : BaseViewModel
 {
     private readonly GoalService _goalService;
     private readonly TransactionService _txService;
+    private readonly SnackbarService _snackbar;
 
     [ObservableProperty] private ObservableCollection<GoalItemVM> _goalItems = [];
     [ObservableProperty] private Goal? _selectedGoal;
@@ -37,10 +38,11 @@ public partial class GoalsViewModel : BaseViewModel
     public List<string> AvailableIcons { get; } =
         ["🎯", "🏠", "🚗", "✈️", "💍", "🎓", "🏖️", "💻", "📱", "🏋️", "🌍", "💎"];
 
-    public GoalsViewModel(GoalService goalService, TransactionService txService)
+    public GoalsViewModel(GoalService goalService, TransactionService txService, SnackbarService snackbar)
     {
         _goalService = goalService;
         _txService = txService;
+        _snackbar = snackbar;
     }
 
     [RelayCommand]
@@ -66,8 +68,7 @@ public partial class GoalsViewModel : BaseViewModel
     {
         if (string.IsNullOrWhiteSpace(NewName) || NewTargetAmount <= 0)
         {
-            MessageBox.Show("Please enter a name and target amount.", "Validation Error",
-                MessageBoxButton.OK, MessageBoxImage.Warning);
+            _snackbar.ShowWarning("Please enter a name and target amount.");
             return;
         }
         _goalService.Add(new Goal
@@ -100,12 +101,8 @@ public partial class GoalsViewModel : BaseViewModel
     private void DeleteGoal(GoalItemVM item)
     {
         if (item == null) return;
-        var res = MessageBox.Show($"Delete goal '{item.Goal.Name}'?",
-            "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
-        if (res == MessageBoxResult.Yes)
-        {
-            _goalService.Delete(item.Goal.Id);
-            Load();
-        }
+        _goalService.Delete(item.Goal.Id);
+        _snackbar.Show($"Goal '{item.Goal.Name}' deleted.");
+        Load();
     }
 }

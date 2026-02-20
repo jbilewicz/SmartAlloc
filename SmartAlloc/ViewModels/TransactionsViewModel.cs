@@ -13,6 +13,7 @@ public partial class TransactionsViewModel : BaseViewModel
     private readonly CategoryService _catService;
     private readonly BudgetService _budgetService;
     private readonly RecurringTransactionService _recurringService;
+    private readonly SnackbarService _snackbar;
 
     [ObservableProperty] private ObservableCollection<Transaction> _transactions = [];
     [ObservableProperty] private ObservableCollection<string> _categories = [];
@@ -29,7 +30,6 @@ public partial class TransactionsViewModel : BaseViewModel
     [ObservableProperty] private string _filterText = string.Empty;
     [ObservableProperty] private string _filterCategory = "All";
 
-    // Recurring
     [ObservableProperty] private ObservableCollection<RecurringTransaction> _recurringItems = [];
     [ObservableProperty] private decimal _newRecurringAmount;
     [ObservableProperty] private string _newRecurringCategory = string.Empty;
@@ -39,12 +39,14 @@ public partial class TransactionsViewModel : BaseViewModel
     [ObservableProperty] private int _newRecurringDay = 1;
 
     public TransactionsViewModel(TransactionService txService, CategoryService catService,
-                                  BudgetService budgetService, RecurringTransactionService recurringService)
+                                  BudgetService budgetService, RecurringTransactionService recurringService,
+                                  SnackbarService snackbar)
     {
         _txService = txService;
         _catService = catService;
         _budgetService = budgetService;
         _recurringService = recurringService;
+        _snackbar = snackbar;
     }
 
     [RelayCommand]
@@ -80,14 +82,12 @@ public partial class TransactionsViewModel : BaseViewModel
     {
         if (NewAmount <= 0)
         {
-            MessageBox.Show("Please enter an amount greater than 0.", "Validation Error",
-                MessageBoxButton.OK, MessageBoxImage.Warning);
+            _snackbar.ShowWarning("Please enter an amount greater than 0.");
             return;
         }
         if (string.IsNullOrWhiteSpace(NewCategory))
         {
-            MessageBox.Show("Please select a category.", "Validation Error",
-                MessageBoxButton.OK, MessageBoxImage.Warning);
+            _snackbar.ShowWarning("Please select a category.");
             return;
         }
 
@@ -119,13 +119,11 @@ public partial class TransactionsViewModel : BaseViewModel
         expenses.TryGetValue(categoryName, out var spent);
         var pct = budget.MonthlyLimit > 0 ? (double)(spent / budget.MonthlyLimit * 100) : 0;
         if (pct >= 100)
-            MessageBox.Show(
-                $"Budget exceeded for \"{categoryName}\"!\nSpent: {spent:N2} PLN  /  Limit: {budget.MonthlyLimit:N2} PLN",
-                "Budget Exceeded", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _snackbar.ShowWarning(
+                $"Budget exceeded for \"{categoryName}\"! Spent: {spent:N2} / {budget.MonthlyLimit:N2} PLN");
         else if (pct >= 90)
-            MessageBox.Show(
-                $"Warning: {pct:N0}% of monthly budget used for \"{categoryName}\".\nSpent: {spent:N2} PLN  /  Limit: {budget.MonthlyLimit:N2} PLN",
-                "Budget Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _snackbar.ShowWarning(
+                $"{pct:N0}% of budget used for \"{categoryName}\". Spent: {spent:N2} / {budget.MonthlyLimit:N2} PLN");
     }
 
     [RelayCommand]
@@ -151,8 +149,7 @@ public partial class TransactionsViewModel : BaseViewModel
         if (NewRecurringAmount <= 0 || string.IsNullOrWhiteSpace(NewRecurringCategory)) return;
         if (NewRecurringDay < 1 || NewRecurringDay > 28)
         {
-            MessageBox.Show("Day must be between 1 and 28.", "Validation",
-                MessageBoxButton.OK, MessageBoxImage.Warning);
+            _snackbar.ShowWarning("Day must be between 1 and 28.");
             return;
         }
         _recurringService.Add(new RecurringTransaction

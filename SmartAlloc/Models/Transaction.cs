@@ -8,6 +8,7 @@ public class Transaction
     public string CategoryName { get; set; } = string.Empty;
     public string Note { get; set; } = string.Empty;
     public TransactionType Type { get; set; }
+    public int UserId { get; set; }
 }
 
 public enum TransactionType

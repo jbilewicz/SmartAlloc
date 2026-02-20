@@ -78,7 +78,14 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:GoalItemVM}">
                         <Border Style="{StaticResource GlassCardStyle}"
-                                Width="300" Margin="0,0,16,16">
+                                Width="300" Margin="0,0,16,16"
+                                AllowDrop="True"
+                                MouseMove="GoalCard_MouseMove"
+                                GiveFeedback="GoalCard_GiveFeedback"
+                                DragOver="GoalCard_DragOver"
+                                DragLeave="GoalCard_DragLeave"
+                                Drop="GoalCard_Drop"
+                                Cursor="Hand">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>

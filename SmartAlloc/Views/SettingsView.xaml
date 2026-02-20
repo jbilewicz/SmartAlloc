@@ -1,0 +1,259 @@
+<UserControl x:Class="SmartAlloc.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource BackgroundBrush}">
+
+    <UserControl.Resources>
+        <!-- PasswordBox styled like DarkInputStyle -->
+        <Style x:Key="DarkPwdStyle" TargetType="PasswordBox">
+            <Setter Property="Background" Value="#1A1A35"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Section header -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+
+        <!-- Danger button -->
+        <Style x:Key="DangerButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#C0392B"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E74C3C"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#96281B"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer Style="{StaticResource ScrollViewerStyle}">
+        <StackPanel Margin="28,20,28,28" MaxWidth="680">
+
+            <!-- Header -->
+            <TextBlock Text="Settings" Style="{StaticResource PageTitleStyle}"/>
+            <TextBlock Text="Security and configuration" Style="{StaticResource PageSubtitleStyle}"
+                       Margin="0,0,0,28"/>
+
+            <!-- ══ CHANGE PIN ══════════════════════════════════════════════ -->
+            <Border Style="{StaticResource GlassCardStyle}" Margin="0,0,0,20">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="🔐" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Change PIN" Style="{StaticResource SectionHeaderStyle}"
+                                   Margin="0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Current PIN" FontSize="12"
+                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                    <PasswordBox x:Name="PinCurrentBox" Style="{StaticResource DarkPwdStyle}"
+                                 Margin="0,0,0,12" MaxLength="20"/>
+
+                    <TextBlock Text="New PIN" FontSize="12"
+                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                    <PasswordBox x:Name="PinNewBox" Style="{StaticResource DarkPwdStyle}"
+                                 Margin="0,0,0,12" MaxLength="20"/>
+
+                    <TextBlock Text="Confirm New PIN" FontSize="12"
+                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                    <PasswordBox x:Name="PinConfirmBox" Style="{StaticResource DarkPwdStyle}"
+                                 Margin="0,0,0,20" MaxLength="20"/>
+
+                    <Button Content="Save New PIN"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            HorizontalAlignment="Left"
+                            Command="{Binding ChangePinCommand}"
+                            Click="ChangePinButton_Click"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ══ AUTO-LOCK ═══════════════════════════════════════════════ -->
+            <Border Style="{StaticResource GlassCardStyle}" Margin="0,0,0,20">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="🔒" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Auto-lock" Style="{StaticResource SectionHeaderStyle}"
+                                   Margin="0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Lock the screen after a period of inactivity." FontSize="12"
+                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,14"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox Grid.Column="0"
+                                  ItemsSource="{Binding AutoLockOptions}"
+                                  SelectedIndex="{Binding SelectedAutoLockIndex}"
+                                  Style="{StaticResource DarkComboStyle}"/>
+                        <Button Grid.Column="2" Content="Save"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Padding="20,10"
+                                Command="{Binding SaveAutoLockCommand}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ══ BACKUP & RESTORE ════════════════════════════════════════ -->
+            <Border Style="{StaticResource GlassCardStyle}" Margin="0,0,0,20">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="💾" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Backup &amp; Restore" Style="{StaticResource SectionHeaderStyle}"
+                                   Margin="0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"
+                               Margin="0,0,0,18" TextWrapping="Wrap">
+                        <Run Text="Export Backup"/>
+                        <Run Text=" saves an encrypted copy of your database. "/>
+                        <Run Text="Import Backup"/>
+                        <Run Text=" restores all data from a previous backup (current data will be replaced)."/>
+                    </TextBlock>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="📤  Export Backup"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Margin="0,0,12,0"
+                                Command="{Binding BackupCommand}"/>
+                        <Button Content="📥  Import Backup"
+                                Style="{StaticResource OutlineButtonStyle}"
+                                Padding="20,10"
+                                Command="{Binding RestoreCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ══ KEYBOARD SHORTCUTS ════════════════════════════════════════ -->
+            <Border Style="{StaticResource GlassCardStyle}" Margin="0,0,0,20">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="⌨️" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Keyboard Shortcuts" Style="{StaticResource SectionHeaderStyle}"
+                                   Margin="0" VerticalAlignment="Center"/>
+                        <TextBlock Text="  — press F1 anywhere to open the overlay" FontSize="11"
+                                   Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Navigation -->
+                    <TextBlock Text="NAVIGATION" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
+                    <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+1 … Ctrl+6" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
+                        <TextBlock Grid.Column="1" Text="Dashboard, Transactions, Budgets, Goals, Statistics, Settings" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="Wrap"/>
+                    </Grid>
+
+                    <!-- Actions -->
+                    <TextBlock Text="ACTIONS" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMutedBrush}" Margin="0,12,0,10"/>
+                    <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+N" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
+                        <TextBlock Grid.Column="1" Text="New Transaction (go to Transactions)" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </Grid>
+                    <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+R" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
+                        <TextBlock Grid.Column="1" Text="Generate PDF Report" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </Grid>
+                    <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+T" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
+                        <TextBlock Grid.Column="1" Text="Toggle Light / Dark theme" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </Grid>
+                    <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+L" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
+                        <TextBlock Grid.Column="1" Text="Lock screen now" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </Grid>
+                    <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+W" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
+                        <TextBlock Grid.Column="1" Text="Minimize window" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </Grid>
+
+                    <!-- General -->
+                    <TextBlock Text="GENERAL" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMutedBrush}" Margin="0,12,0,10"/>
+                    <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="F1" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
+                        <TextBlock Grid.Column="1" Text="Show / hide keyboard shortcuts overlay" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </Grid>
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Esc" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
+                        <TextBlock Grid.Column="1" Text="Close overlay  /  go to Dashboard" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ══ DANGER ZONE ═════════════════════════════════════════════ -->
+            <Border Margin="0,0,0,20" CornerRadius="16" Padding="20"
+                    BorderThickness="1" BorderBrush="#80C0392B"
+                    Background="#10C0392B">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="🗑️" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Danger Zone" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="#E74C3C" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"
+                               TextWrapping="Wrap" Margin="0,0,0,18">
+                        Permanently delete your account and all associated data
+                        (transactions, budgets, goals, recurring transactions).
+                        This action cannot be undone.
+                    </TextBlock>
+
+                    <Button Content="Delete My Account"
+                            Style="{StaticResource DangerButtonStyle}"
+                            HorizontalAlignment="Left"
+                            Command="{Binding DeleteAccountCommand}"/>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
