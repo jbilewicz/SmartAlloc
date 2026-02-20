@@ -102,3 +102,5 @@ dotnet run --project SmartAlloc/SmartAlloc.csproj
 The database is created automatically on first launch at `%AppData%\SmartAlloc\SmartAlloc.db`.
 
 ---
+**Author:**
+jbilewicz
