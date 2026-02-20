@@ -1,0 +1,192 @@
+﻿<UserControl x:Class="SmartAlloc.Views.TransactionsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:SmartAlloc.Models"
+             Background="{DynamicResource BackgroundBrush}">
+
+    <Grid Margin="28,20,28,28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,4">
+            <TextBlock Text="Transactions" Style="{StaticResource PageTitleStyle}"/>
+            <TextBlock Text="Manage your income and expenses" Style="{StaticResource PageSubtitleStyle}"/>
+        </StackPanel>
+
+        <!-- Add form + Filters -->
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Add Transaction Card -->
+            <Border Grid.Column="0" Style="{StaticResource GlassCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="➕ New transaction" Style="{StaticResource SectionTitleStyle}"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Amount (PLN)" Style="{StaticResource LabelStyle}"/>
+                            <TextBox Text="{Binding NewAmount, StringFormat={}{0:N2}, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource DarkInputStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Date" Style="{StaticResource LabelStyle}"/>
+                            <DatePicker SelectedDate="{Binding NewDate}"
+                                        Background="{DynamicResource InputBackgroundBrush}"
+                                        Foreground="{DynamicResource TextPrimaryBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        Padding="8,6"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="4">
+                            <TextBlock Text="Category" Style="{StaticResource LabelStyle}"/>
+                            <ComboBox ItemsSource="{Binding Categories}"
+                                      SelectedItem="{Binding NewCategory}"
+                                      Style="{StaticResource DarkComboStyle}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Note" Style="{StaticResource LabelStyle}"/>
+                            <TextBox Text="{Binding NewNote, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource DarkInputStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Orientation="Horizontal">
+                            <Border Style="{StaticResource TagStyle}" Margin="0,0,8,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton Content="📉 Expense" IsChecked="{Binding IsExpense}"
+                                                 Foreground="{StaticResource DangerBrush}" Margin="0,0,4,0"/>
+                                    <RadioButton Content="📈 Income" IsChecked="{Binding IsIncome}"
+                                                 Foreground="{StaticResource SuccessBrush}"/>
+                                </StackPanel>
+                            </Border>
+                            <Button Content="Add transaction"
+                                    Command="{Binding AddTransactionCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Filters Card -->
+            <Border Grid.Column="2" Style="{StaticResource GlassCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="🔍 Filters" Style="{StaticResource SectionTitleStyle}"/>
+                    <TextBlock Text="Search" Style="{StaticResource LabelStyle}"/>
+                    <TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource DarkInputStyle}"
+                             Margin="0,0,0,12"/>
+                    <TextBlock Text="Category" Style="{StaticResource LabelStyle}"/>
+                    <ComboBox ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding FilterCategory}"
+                              Style="{StaticResource DarkComboStyle}"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Transactions DataGrid -->
+        <Border Grid.Row="2" Style="{StaticResource GlassCardStyle}" Padding="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Padding="20,16,20,12"
+                        BorderThickness="0,0,0,1"
+                        BorderBrush="{DynamicResource BorderBrush}">
+                    <Grid>
+                        <TextBlock Text="📋 Transaction list" Style="{StaticResource SectionTitleStyle}" Margin="0"/>
+                        <Button Content="🗑 Delete selected"
+                                Command="{Binding DeleteTransactionCommand}"
+                                Style="{StaticResource DangerButtonStyle}"
+                                Padding="14,7" FontSize="12"
+                                HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>
+
+                <DataGrid Grid.Row="1"
+                          ItemsSource="{Binding Transactions}"
+                          SelectedItem="{Binding SelectedTransaction}"
+                          Style="{StaticResource DarkDataGridStyle}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserReorderColumns="False"
+                          CanUserResizeRows="False"
+                          SelectionMode="Single"
+                          Margin="0,0,0,0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date"
+                                            Binding="{Binding Date, StringFormat=dd.MM.yyyy}"
+                                            Width="100"/>
+                        <DataGridTemplateColumn Header="Typ" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock>
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="📉 Expense"/>
+                                                <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Type}" Value="Income">
+                                                        <Setter Property="Text" Value="📈 Income"/>
+                                                        <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Category" Binding="{Binding CategoryName}" Width="*"/>
+                        <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*"/>
+                        <DataGridTemplateColumn Header="Amount" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Amount, StringFormat={}{0:N2} zł}"
+                                               FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Type}" Value="Income">
+                                                        <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
