@@ -2,7 +2,6 @@
 
 **FinancialOrganizer** is a desktop application for personal wealth management. Built with C# and WPF.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
 ![Framework](https://img.shields.io/badge/.NET-8.0-purple.svg)
 
