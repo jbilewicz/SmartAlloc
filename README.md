@@ -5,6 +5,9 @@
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
 ![Framework](https://img.shields.io/badge/.NET-9.0-purple.svg)
 ![Language](https://img.shields.io/badge/C%23-13-blue.svg)
+[![Download](https://img.shields.io/github/v/release/jbilewicz/SmartAlloc?label=download&logo=github)](https://github.com/jbilewicz/SmartAlloc/releases/latest)
+
+> **No installation required.** Download `SmartAlloc.exe` from [Releases](https://github.com/jbilewicz/SmartAlloc/releases/latest) and run it directly.
 
 ---
 
