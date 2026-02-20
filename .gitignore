@@ -485,3 +485,5 @@ $RECYCLE.BIN/
 
 # Compiled app output
 app/
+
+publish/
