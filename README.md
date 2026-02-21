@@ -2,9 +2,10 @@
 
 A personal finance management desktop application built with WPF and .NET 9.
 
-![License](https://img.shields.io/github/license/jbilewicz/SmartAlloc)
-![.NET](https://img.shields.io/badge/.NET-9.0-purple)
-[![Release](https://img.shields.io/github/v/release/jbilewicz/SmartAlloc)](https://github.com/jbilewicz/SmartAlloc/releases/latest)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
+![Framework](https://img.shields.io/badge/.NET-9.0-purple.svg)
+![Language](https://img.shields.io/badge/C%23-13-blue.svg)
+[![Download](https://img.shields.io/github/v/release/jbilewicz/SmartAlloc?label=download&logo=github)](https://github.com/jbilewicz/SmartAlloc/releases/latest)
 
 ---
 
@@ -102,11 +103,6 @@ The resulting `SmartAlloc.exe` in `publish/` can be distributed without requirin
 - The encryption key is stored in `%AppData%\SmartAlloc\db.key` — never in the repository
 - No data is sent to any server except optional live currency rate lookups
 
----
-
-## License
-
-MIT — see [LICENSE](LICENSE)
 
 ---
 
