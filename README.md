@@ -4,6 +4,7 @@ A personal finance management desktop application built with WPF and .NET 9.
 
 ![License](https://img.shields.io/github/license/jbilewicz/SmartAlloc)
 ![.NET](https://img.shields.io/badge/.NET-9.0-purple)
+[![Release](https://img.shields.io/github/v/release/jbilewicz/SmartAlloc)](https://github.com/jbilewicz/SmartAlloc/releases/latest)
 
 ---
 
