@@ -1,42 +1,41 @@
-# SmartAlloc — Personal Finance Manager
+# SmartAlloc
 
-**SmartAlloc** is a desktop application for personal wealth management. Built with C# and WPF.
+A personal finance management desktop application built with WPF and .NET 9.
 
-![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
-![Framework](https://img.shields.io/badge/.NET-9.0-purple.svg)
-![Language](https://img.shields.io/badge/C%23-13-blue.svg)
-[![Download](https://img.shields.io/github/v/release/jbilewicz/SmartAlloc?label=download&logo=github)](https://github.com/jbilewicz/SmartAlloc/releases/latest)
-
-> **No installation required.** Download `SmartAlloc.exe` from [Releases](https://github.com/jbilewicz/SmartAlloc/releases/latest) and run it directly.
+![License](https://img.shields.io/github/license/jbilewicz/SmartAlloc)
+![.NET](https://img.shields.io/badge/.NET-9.0-purple)
 
 ---
 
 ## Key Features
 
-- **Zero-Knowledge Security:** Local SQLite database encrypted with **SQLCipher (AES-256)**. The database is stored in `%AppData%\SmartAlloc\` and never leaves your machine.
-- **Interactive Dashboard:** Real-time KPI cards (balance, income, expenses), a pie chart of current-month spending by category, and a 6-month balance history line chart — all powered by **LiveCharts2**.
-- **Transaction Management:** Add income and expense transactions with a category, date, and note. Filter the list by category or free-text search in real time.
-- **Category Management:** Create custom categories with a name, icon, and color. Ten default categories are seeded on first launch (Food, Housing, Transport, Health, Entertainment, Clothing, Education, Travel, Bills, Other).
-- **Budget Tracking:** Set monthly spending limits per category and track how close you are to each limit.
-- **Smart Goal Tracker:** Create savings goals with a target amount and optional deadline. The app predicts your achievement date based on your average monthly savings velocity.
-- **Live Currency Engine:** Real-time exchange rate integration (PLN / USD / EUR / CHF / GBP) via the **NBP API**, with a 15-minute in-memory cache and automatic fallback values when offline.
-- **Monthly PDF Reports:** One-click generation of styled monthly financial summaries (transactions table, category breakdown, KPI summary) saved to your Documents folder via **QuestPDF**.
-- **Dark / Light Theme:** Toggle between dark and light Material Design themes at runtime without restarting the app.
+- **Dashboard** — spending overview with interactive pie chart (localized category names), recent transactions, and quick stats
+- **Transactions** — add, edit, delete income/expense entries with category tagging and notes
+- **Budgets** — monthly budget limits per category with progress tracking
+- **Goals** — savings goal tracking with month-by-month view mode; year navigation hidden in month view
+- **Statistics** — visual spending breakdowns by category and time period
+- **Recurring Transactions** — automatic entries on a defined schedule
+- **Currency Converter** — live exchange rates via API
+- **Reports** — PDF export via QuestPDF
+- **Multi-language** — 11 languages (EN, PL, DE, FR, ES, IT, PT, NL, RU, UK, JA); all UI text translated including category names
+- **Themes** — light and dark mode
+- **Tray mode** — close button shows a dialog: minimize to system tray (app runs in background) or exit completely; double-click tray icon to restore; all tray text is localized
+- **Reminders** — scheduled balloon notifications via system tray
+- **Secure local DB** — SQLite encrypted with SQLCipher; database stored in `%AppData%\SmartAlloc\`
 
 ---
 
 ## Tech Stack
 
-- **Language:** C# 13 / .NET 9
-- **UI Framework:** WPF (Windows Presentation Foundation)
-- **Architecture:** MVVM — `CommunityToolkit.Mvvm` (source-generated `ObservableProperty`, `RelayCommand`)
-- **Dependency Injection:** `Microsoft.Extensions.DependencyInjection` + `Microsoft.Extensions.Hosting`
-- **Design:** Material Design in XAML (`MaterialDesignThemes` 5.1)
-- **Database:** SQLite + SQLCipher (AES-256 encryption) via `Microsoft.Data.Sqlite` + `SQLitePCLRaw.bundle_e_sqlcipher`
-- **Libraries:**
-  - `LiveChartsCore.SkiaSharpView.WPF` — pie and line charts
-  - `QuestPDF` — PDF report generation
-  - `System.Net.Http.Json` — NBP API consumption
+| Layer | Technology |
+|---|---|
+| UI Framework | WPF (.NET 9) |
+| MVVM | CommunityToolkit.Mvvm 8.4.0 |
+| Database | SQLite + SQLCipher (Microsoft.Data.Sqlite) |
+| Charts | LiveChartsCore.SkiaSharpView.WPF |
+| PDF | QuestPDF |
+| UI Components | MaterialDesignThemes |
+| Exchange Rates | Open exchange rates API |
 
 ---
 
@@ -44,66 +43,70 @@
 
 ```
 SmartAlloc/
-  Data/
-    DatabaseContext.cs       # SQLite connection, schema init, default category seed
-  Models/
-    Transaction.cs           # Transaction + TransactionType enum
-    Category.cs              # Category (name, icon, color)
-    Budget.cs                # Monthly budget limit per category
-    Goal.cs                  # Savings goal with progress and remaining amount
-    CurrencyRate.cs          # NBP API response models
-  Services/
-    TransactionService.cs    # CRUD + aggregations (balance, income, expenses, history)
-    CategoryService.cs       # Category CRUD
-    BudgetService.cs         # Budget CRUD
-    GoalService.cs           # Goal CRUD + achievement date prediction
-    CurrencyService.cs       # NBP API fetch, 15-min cache, PLN conversion
-    ReportService.cs         # QuestPDF monthly report generation
-    ThemeService.cs          # Dark/Light theme switching
-  ViewModels/
-    BaseViewModel.cs
-    MainViewModel.cs         # Navigation, window chrome
-    DashboardViewModel.cs    # KPI, charts, currency conversion
-    TransactionsViewModel.cs # Transaction list, filters, add/delete
-    BudgetsViewModel.cs      # Budget list, add/delete
-    GoalsViewModel.cs        # Goal list, add funds, achievement prediction
-  Views/
-    MainWindow.xaml          # Shell with side navigation
-    DashboardView.xaml
-    TransactionsView.xaml
-    BudgetsView.xaml
-    GoalsView.xaml
-  Themes/
-    Colors.xaml              # Dark palette
-    ColorsLight.xaml         # Light palette
-    Styles.xaml              # Shared control styles
+├── Models/             # Entity classes (Transaction, Budget, Goal, …)
+├── ViewModels/         # MVVM view models
+├── Views/              # XAML views and code-behind
+├── Services/           # Business logic (Auth, Budget, Currency, Report, …)
+├── Converters/         # WPF value converters
+├── Data/               # DatabaseContext (EF Core + SQLite)
+├── Themes/             # XAML resource dictionaries (Colors, Styles)
+└── Resources/          # Icons and other static assets
 ```
 
 ---
 
 ## Database Schema
 
-| Table          | Key Columns                                                          |
-|----------------|----------------------------------------------------------------------|
-| `Transactions` | Id, Amount, Date, CategoryName, Note, Type (Income/Expense)          |
-| `Categories`   | Id, Name, Icon, Color                                                |
-| `Budgets`      | Id, CategoryName, MonthlyLimit, Month, Year                          |
-| `Goals`        | Id, Name, Icon, TargetAmount, CurrentAmount, CreatedDate, TargetDate |
+| Table | Key Columns |
+|---|---|
+| `UserAccounts` | Id, Username, PinHash, Currency, Language, Theme |
+| `Transactions` | Id, UserId, Amount, Category, Date, Note, IsRecurring |
+| `Budgets` | Id, UserId, Category, MonthlyLimit, Month |
+| `Goals` | Id, UserId, Name, TargetAmount, CurrentAmount, Deadline |
+| `RecurringTransactions` | Id, UserId, Amount, Category, IntervalDays, NextDate |
+| `CurrencyRates` | BaseCurrency, TargetCurrency, Rate, LastUpdated |
 
 ---
 
 ## Getting Started
 
-**Prerequisites:** Windows 10/11, .NET 9 SDK
+### Prerequisites
+
+- Windows 10/11
+- [.NET 9 Runtime](https://dotnet.microsoft.com/download/dotnet/9.0)
+
+### Build from Source
 
 ```bash
-git clone https://github.com/your-username/SmartAlloc.git
+git clone https://github.com/jbilewicz/SmartAlloc.git
 cd SmartAlloc
+dotnet build SmartAlloc.sln --configuration Release
 dotnet run --project SmartAlloc/SmartAlloc.csproj
 ```
 
-The database is created automatically on first launch at `%AppData%\SmartAlloc\SmartAlloc.db`.
+### Publish a Self-Contained Executable
+
+```bash
+dotnet publish SmartAlloc/SmartAlloc.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish/
+```
+
+The resulting `SmartAlloc.exe` in `publish/` can be distributed without requiring .NET installed.
 
 ---
-**Author:**
-jbilewicz
+
+## Privacy & Security
+
+- All data is stored **locally** in `%AppData%\SmartAlloc\`
+- The SQLite database is encrypted with SQLCipher
+- The encryption key is stored in `%AppData%\SmartAlloc\db.key` — never in the repository
+- No data is sent to any server except optional live currency rate lookups
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE)
+
+---
+
+**Author:** [jbilewicz](https://github.com/jbilewicz)
