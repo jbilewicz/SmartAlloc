@@ -16,11 +16,6 @@ public class DatabaseContext : IDisposable
 
     public static readonly string DbPath = Path.Combine(_appDataDir, "SmartAlloc.db");
 
-    /// <summary>
-    /// Zwraca hasło do bazy danych. Przy pierwszym uruchomieniu generuje losowy klucz,
-    /// szyfruje go via DPAPI (zakres: bieżący użytkownik Windows) i zapisuje jako db.key.
-    /// Przy kolejnych uruchomieniach odczytuje i odszyfrowuje ten plik.
-    /// </summary>
     private static string GetOrCreateDbPassword()
     {
         var keyPath = Path.Combine(_appDataDir, "db.key");
