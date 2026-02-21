@@ -127,9 +127,14 @@ public partial class LoginViewModel : ObservableObject
             ErrorMessage = "Please enter a display name.";
             return;
         }
-        if (NewPin.Length < 1)
+        if (NewPin.Length < 4)
         {
-            ErrorMessage = "Please enter a PIN.";
+            ErrorMessage = "PIN must be at least 4 digits.";
+            return;
+        }
+        if (!NewPin.All(char.IsDigit))
+        {
+            ErrorMessage = "PIN must contain digits only.";
             return;
         }
         if (NewPin != NewConfirmPin)

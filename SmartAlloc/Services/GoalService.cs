@@ -76,8 +76,9 @@ public class GoalService
         if (avgMonthlySavings <= 0) return null;
         var remaining = goal.RemainingAmount;
         if (remaining <= 0) return DateTime.Now;
-        var monthsNeeded = (double)(remaining / avgMonthlySavings);
-        return DateTime.Now.AddMonths((int)Math.Ceiling(monthsNeeded));
+        var monthsNeeded = (int)Math.Ceiling((double)(remaining / avgMonthlySavings));
+        if (monthsNeeded > 1200) return null;
+        return DateTime.Now.AddMonths(monthsNeeded);
     }
 
     private static Goal Map(SqliteDataReader r) => new()

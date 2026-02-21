@@ -54,6 +54,7 @@ public class DatabaseContext : IDisposable
     {
         if (_connection == null || _connection.State != System.Data.ConnectionState.Open)
         {
+            _connection?.Dispose();
             _connection = new SqliteConnection(_connectionString);
             _connection.Open();
         }
@@ -127,6 +128,10 @@ public class DatabaseContext : IDisposable
         cmd.ExecuteNonQuery();
 
         MigrateAddUserIdColumns(conn);
+        MigrateAddReminderColumn(conn);
+        MigrateAddBudgetDescriptionAndRemoveUnique(conn);
+        MigrateAddRecurringColor(conn);
+        MigrateAddBudgetDeposited(conn);
         SeedDefaultCategories(conn);
     }
 
@@ -146,6 +151,82 @@ public class DatabaseContext : IDisposable
                 update.ExecuteNonQuery();
             }
             catch { }
+        }
+    }
+
+    private static void MigrateAddReminderColumn(SqliteConnection conn)
+    {
+        try
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "ALTER TABLE RecurringTransactions ADD COLUMN ReminderDaysBefore INTEGER NOT NULL DEFAULT 0";
+            cmd.ExecuteNonQuery();
+        }
+        catch { }
+    }
+
+    private static void MigrateAddRecurringColor(SqliteConnection conn)
+    {
+        try
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "ALTER TABLE RecurringTransactions ADD COLUMN Color TEXT NOT NULL DEFAULT '#6C63FF'";
+            cmd.ExecuteNonQuery();
+        }
+        catch { }
+    }
+
+    private static void MigrateAddBudgetDeposited(SqliteConnection conn)
+    {
+        try
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "ALTER TABLE Budgets ADD COLUMN Deposited REAL NOT NULL DEFAULT 0";
+            cmd.ExecuteNonQuery();
+        }
+        catch { }
+    }
+
+    private static void MigrateAddBudgetDescriptionAndRemoveUnique(SqliteConnection conn)
+    {
+        try
+        {
+            using var addCol = conn.CreateCommand();
+            addCol.CommandText = "ALTER TABLE Budgets ADD COLUMN Description TEXT NOT NULL DEFAULT ''";
+            addCol.ExecuteNonQuery();
+        }
+        catch { }
+
+        using var checkCmd = conn.CreateCommand();
+        checkCmd.CommandText = "SELECT sql FROM sqlite_master WHERE type='table' AND name='Budgets'";
+        var tableSql = checkCmd.ExecuteScalar() as string ?? "";
+
+        if (tableSql.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase))
+        {
+            using var t1 = conn.CreateCommand();
+            t1.CommandText = @"
+                CREATE TABLE Budgets_new (
+                    Id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                    CategoryName TEXT    NOT NULL,
+                    MonthlyLimit REAL    NOT NULL,
+                    Month        INTEGER NOT NULL,
+                    Year         INTEGER NOT NULL,
+                    UserId       INTEGER NOT NULL DEFAULT 0,
+                    Description  TEXT    NOT NULL DEFAULT ''
+                )";
+            t1.ExecuteNonQuery();
+
+            using var t2 = conn.CreateCommand();
+            t2.CommandText = "INSERT INTO Budgets_new SELECT Id, CategoryName, MonthlyLimit, Month, Year, UserId, Description FROM Budgets";
+            t2.ExecuteNonQuery();
+
+            using var t3 = conn.CreateCommand();
+            t3.CommandText = "DROP TABLE Budgets";
+            t3.ExecuteNonQuery();
+
+            using var t4 = conn.CreateCommand();
+            t4.CommandText = "ALTER TABLE Budgets_new RENAME TO Budgets";
+            t4.ExecuteNonQuery();
         }
     }
 

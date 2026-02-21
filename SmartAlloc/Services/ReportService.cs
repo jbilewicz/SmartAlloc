@@ -17,8 +17,23 @@ public class ReportService
         int year, int month,
         List<Transaction> transactions,
         Dictionary<string, decimal> expensesByCategory,
-        decimal totalIncome, decimal totalExpense, decimal balance)
+        decimal totalIncome, decimal totalExpense, decimal balance,
+        string currency = "PLN",
+        Func<decimal, decimal>? convertAmount = null)
     {
+        convertAmount ??= v => v;
+        string currencyLabel = currency switch
+        {
+            "USD" => "$",
+            "EUR" => "€",
+            "CHF" => "CHF ",
+            "GBP" => "£",
+            _ => "PLN "
+        };
+        string Fmt(decimal v) => currency == "USD" ? $"${convertAmount(v):N2}"
+                               : currency == "EUR" ? $"€{convertAmount(v):N2}"
+                               : currency == "GBP" ? $"£{convertAmount(v):N2}"
+                               : $"{convertAmount(v):N2} {currency}";
         var fileName = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             $"SmartAlloc_Report_{year}_{month:D2}.pdf");
@@ -55,12 +70,12 @@ public class ReportService
                 {
                     col.Item().Row(row =>
                     {
-                        KpiCard(row.RelativeItem(), "Income", $"{totalIncome:N2} PLN", "#27AE60");
+                        KpiCard(row.RelativeItem(), "Income",  Fmt(totalIncome),  "#27AE60");
                         row.ConstantItem(12);
-                        KpiCard(row.RelativeItem(), "Expenses", $"{totalExpense:N2} PLN", "#E74C3C");
+                        KpiCard(row.RelativeItem(), "Expenses", Fmt(totalExpense), "#E74C3C");
                         row.ConstantItem(12);
                         string balColor = balance >= 0 ? "#27AE60" : "#E74C3C";
-                        KpiCard(row.RelativeItem(), "Balance", $"{balance:N2} PLN", balColor);
+                        KpiCard(row.RelativeItem(), "Balance",  Fmt(balance),      balColor);
                     });
 
                     col.Item().PaddingTop(20).Text("Transactions").FontSize(14).Bold();
@@ -92,7 +107,7 @@ public class ReportService
                             table.Cell().Background(rowBg).Padding(5).Text(t.CategoryName);
                             table.Cell().Background(rowBg).Padding(5).Text(t.Note);
                             table.Cell().Background(rowBg).Padding(5)
-                                .Text(tx => { tx.DefaultTextStyle(s => s.FontColor(amtColor)); tx.Span($"{sign}{t.Amount:N2} PLN"); });
+                                .Text(tx => { tx.DefaultTextStyle(s => s.FontColor(amtColor)); tx.Span($"{sign}{Fmt(t.Amount)}"); });
                         }
                     });
 
@@ -123,7 +138,7 @@ public class ReportService
                                 string pct = totalExpense > 0
                                     ? $"{kvp.Value / totalExpense * 100:N1}%" : "0%";
                                 table.Cell().Background(rowBg2).Padding(5).Text(kvp.Key);
-                                table.Cell().Background(rowBg2).Padding(5).Text($"{kvp.Value:N2} PLN");
+                                table.Cell().Background(rowBg2).Padding(5).Text(Fmt(kvp.Value));
                                 table.Cell().Background(rowBg2).Padding(5).Text(pct);
                             }
                         });

@@ -80,7 +80,7 @@ public class BackupService
         {
             MessageBox.Show($"Restore failed:\n{ex.Message}", "Restore Error",
                 MessageBoxButton.OK, MessageBoxImage.Error);
-            _ = _db.GetConnection(); // re-open even on failure
+            _ = _db.GetConnection();
             return false;
         }
     }

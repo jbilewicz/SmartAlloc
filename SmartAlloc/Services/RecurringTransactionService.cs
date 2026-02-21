@@ -37,14 +37,15 @@ public class RecurringTransactionService
         var conn = _db.GetConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            INSERT INTO RecurringTransactions (Amount, CategoryName, Note, Type, DayOfMonth, UserId)
-            VALUES (@amount, @cat, @note, @type, @day, @uid)";
+            INSERT INTO RecurringTransactions (Amount, CategoryName, Note, Type, DayOfMonth, UserId, Color)
+            VALUES (@amount, @cat, @note, @type, @day, @uid, @color)";
         cmd.Parameters.AddWithValue("@amount", r.Amount);
         cmd.Parameters.AddWithValue("@cat", r.CategoryName);
         cmd.Parameters.AddWithValue("@note", r.Note);
         cmd.Parameters.AddWithValue("@type", (int)r.Type);
         cmd.Parameters.AddWithValue("@day", r.DayOfMonth);
         cmd.Parameters.AddWithValue("@uid", Uid);
+        cmd.Parameters.AddWithValue("@color", r.Color);
         cmd.ExecuteNonQuery();
     }
 
@@ -53,6 +54,17 @@ public class RecurringTransactionService
         var conn = _db.GetConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = "DELETE FROM RecurringTransactions WHERE Id=@id AND UserId=@uid";
+        cmd.Parameters.AddWithValue("@id", id);
+        cmd.Parameters.AddWithValue("@uid", Uid);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void SetReminder(int id, int daysBefore)
+    {
+        var conn = _db.GetConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE RecurringTransactions SET ReminderDaysBefore=@days WHERE Id=@id AND UserId=@uid";
+        cmd.Parameters.AddWithValue("@days", daysBefore);
         cmd.Parameters.AddWithValue("@id", id);
         cmd.Parameters.AddWithValue("@uid", Uid);
         cmd.ExecuteNonQuery();
@@ -102,6 +114,8 @@ public class RecurringTransactionService
         Note = r.IsDBNull(3) ? "" : r.GetString(3),
         Type = (TransactionType)r.GetInt32(4),
         DayOfMonth = r.GetInt32(5),
-        LastRunYearMonth = r.IsDBNull(6) ? null : r.GetString(6)
+        LastRunYearMonth = r.IsDBNull(6) ? null : r.GetString(6),
+        ReminderDaysBefore = r.FieldCount > 7 && !r.IsDBNull(7) ? r.GetInt32(7) : 0,
+        Color = r.FieldCount > 8 && !r.IsDBNull(8) ? r.GetString(8) : "#6C63FF"
     };
 }

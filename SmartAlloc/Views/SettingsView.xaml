@@ -4,7 +4,6 @@
              Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
-        <!-- PasswordBox styled like DarkInputStyle -->
         <Style x:Key="DarkPwdStyle" TargetType="PasswordBox">
             <Setter Property="Background" Value="#1A1A35"/>
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
@@ -34,7 +33,6 @@
             </Setter>
         </Style>
 
-        <!-- Section header -->
         <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -42,7 +40,6 @@
             <Setter Property="Margin" Value="0,0,0,16"/>
         </Style>
 
-        <!-- Danger button -->
         <Style x:Key="DangerButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#C0392B"/>
             <Setter Property="Foreground" Value="White"/>
@@ -75,36 +72,34 @@
     <ScrollViewer Style="{StaticResource ScrollViewerStyle}">
         <StackPanel Margin="28,20,28,28" MaxWidth="680">
 
-            <!-- Header -->
-            <TextBlock Text="Settings" Style="{StaticResource PageTitleStyle}"/>
-            <TextBlock Text="Security and configuration" Style="{StaticResource PageSubtitleStyle}"
+            <TextBlock Text="{Binding [Title.Settings], Source={StaticResource Loc}}" Style="{StaticResource PageTitleStyle}"/>
+            <TextBlock Text="{Binding [Title.SettingsSub], Source={StaticResource Loc}}" Style="{StaticResource PageSubtitleStyle}"
                        Margin="0,0,0,28"/>
 
-            <!-- ══ CHANGE PIN ══════════════════════════════════════════════ -->
             <Border Style="{StaticResource GlassCardStyle}" Margin="0,0,0,20">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <TextBlock Text="🔐" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Change PIN" Style="{StaticResource SectionHeaderStyle}"
+                        <TextBlock Text="{Binding [Section.ChangePin], Source={StaticResource Loc}}" Style="{StaticResource SectionHeaderStyle}"
                                    Margin="0" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <TextBlock Text="Current PIN" FontSize="12"
+                    <TextBlock Text="{Binding [Pin.CurrentPin], Source={StaticResource Loc}}" FontSize="12"
                                Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
                     <PasswordBox x:Name="PinCurrentBox" Style="{StaticResource DarkPwdStyle}"
                                  Margin="0,0,0,12" MaxLength="20"/>
 
-                    <TextBlock Text="New PIN" FontSize="12"
+                    <TextBlock Text="{Binding [Pin.NewPin], Source={StaticResource Loc}}" FontSize="12"
                                Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
                     <PasswordBox x:Name="PinNewBox" Style="{StaticResource DarkPwdStyle}"
                                  Margin="0,0,0,12" MaxLength="20"/>
 
-                    <TextBlock Text="Confirm New PIN" FontSize="12"
+                    <TextBlock Text="{Binding [Pin.ConfirmPin], Source={StaticResource Loc}}" FontSize="12"
                                Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
                     <PasswordBox x:Name="PinConfirmBox" Style="{StaticResource DarkPwdStyle}"
                                  Margin="0,0,0,20" MaxLength="20"/>
 
-                    <Button Content="Save New PIN"
+                    <Button Content="{Binding [Btn.SaveNewPin], Source={StaticResource Loc}}"
                             Style="{StaticResource PrimaryButtonStyle}"
                             HorizontalAlignment="Left"
                             Command="{Binding ChangePinCommand}"
@@ -112,16 +107,15 @@
                 </StackPanel>
             </Border>
 
-            <!-- ══ AUTO-LOCK ═══════════════════════════════════════════════ -->
             <Border Style="{StaticResource GlassCardStyle}" Margin="0,0,0,20">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <TextBlock Text="🔒" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Auto-lock" Style="{StaticResource SectionHeaderStyle}"
+                        <TextBlock Text="{Binding [Section.AutoLock], Source={StaticResource Loc}}" Style="{StaticResource SectionHeaderStyle}"
                                    Margin="0" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <TextBlock Text="Lock the screen after a period of inactivity." FontSize="12"
+                    <TextBlock Text="{Binding [Settings.AutoLockDesc], Source={StaticResource Loc}}" FontSize="12"
                                Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,14"/>
 
                     <Grid>
@@ -134,7 +128,7 @@
                                   ItemsSource="{Binding AutoLockOptions}"
                                   SelectedIndex="{Binding SelectedAutoLockIndex}"
                                   Style="{StaticResource DarkComboStyle}"/>
-                        <Button Grid.Column="2" Content="Save"
+                        <Button Grid.Column="2" Content="{Binding [Btn.Save], Source={StaticResource Loc}}"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 Padding="20,10"
                                 Command="{Binding SaveAutoLockCommand}"/>
@@ -142,29 +136,41 @@
                 </StackPanel>
             </Border>
 
-            <!-- ══ BACKUP & RESTORE ════════════════════════════════════════ -->
+            <Border Style="{StaticResource GlassCardStyle}" Margin="0,0,0,20">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="🌐" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding [Label.Language], Source={StaticResource Loc}}" Style="{StaticResource SectionHeaderStyle}"
+                                   Margin="0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding [Section.LanguageDesc], Source={StaticResource Loc}}" FontSize="12"
+                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,14"/>
+
+                    <ComboBox ItemsSource="{Binding AvailableLanguages}"
+                              SelectedItem="{Binding SelectedLanguage}"
+                              Style="{StaticResource DarkComboStyle}"
+                              Width="260" HorizontalAlignment="Left"/>
+                </StackPanel>
+            </Border>
+
             <Border Style="{StaticResource GlassCardStyle}" Margin="0,0,0,20">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <TextBlock Text="💾" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Backup &amp; Restore" Style="{StaticResource SectionHeaderStyle}"
+                        <TextBlock Text="{Binding [Section.Backup], Source={StaticResource Loc}}" Style="{StaticResource SectionHeaderStyle}"
                                    Margin="0" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"
-                               Margin="0,0,0,18" TextWrapping="Wrap">
-                        <Run Text="Export Backup"/>
-                        <Run Text=" saves an encrypted copy of your database. "/>
-                        <Run Text="Import Backup"/>
-                        <Run Text=" restores all data from a previous backup (current data will be replaced)."/>
-                    </TextBlock>
+                    <TextBlock Text="{Binding [Settings.BackupRunDesc], Source={StaticResource Loc}}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"
+                               Margin="0,0,0,18" TextWrapping="Wrap"/>
 
                     <StackPanel Orientation="Horizontal">
-                        <Button Content="📤  Export Backup"
+                        <Button Content="{Binding [Btn.ExportBackup], Source={StaticResource Loc}}"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 Margin="0,0,12,0"
                                 Command="{Binding BackupCommand}"/>
-                        <Button Content="📥  Import Backup"
+                        <Button Content="{Binding [Btn.ImportBackup], Source={StaticResource Loc}}"
                                 Style="{StaticResource OutlineButtonStyle}"
                                 Padding="20,10"
                                 Command="{Binding RestoreCommand}"/>
@@ -172,82 +178,73 @@
                 </StackPanel>
             </Border>
 
-            <!-- ══ KEYBOARD SHORTCUTS ════════════════════════════════════════ -->
             <Border Style="{StaticResource GlassCardStyle}" Margin="0,0,0,20">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <TextBlock Text="⌨️" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Keyboard Shortcuts" Style="{StaticResource SectionHeaderStyle}"
+                        <TextBlock Text="{Binding [Section.Shortcuts], Source={StaticResource Loc}}" Style="{StaticResource SectionHeaderStyle}"
                                    Margin="0" VerticalAlignment="Center"/>
-                        <TextBlock Text="  — press F1 anywhere to open the overlay" FontSize="11"
+                        <TextBlock Text="{Binding [Shortcut.F1Hint], Source={StaticResource Loc}}" FontSize="11"
                                    Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <!-- Navigation -->
-                    <TextBlock Text="NAVIGATION" FontSize="10" FontWeight="SemiBold"
+                    <TextBlock Text="{Binding [Shortcut.Navigation], Source={StaticResource Loc}}" FontSize="10" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
                     <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+1 … Ctrl+6" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Dashboard, Transactions, Budgets, Goals, Statistics, Settings" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.NavPages], Source={StaticResource Loc}}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="Wrap"/>
                     </Grid>
 
-                    <!-- Actions -->
-                    <TextBlock Text="ACTIONS" FontSize="10" FontWeight="SemiBold"
+                    <TextBlock Text="{Binding [Shortcut.Actions], Source={StaticResource Loc}}" FontSize="10" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextMutedBrush}" Margin="0,12,0,10"/>
                     <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+N" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="New Transaction (go to Transactions)" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.NewTx], Source={StaticResource Loc}}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+R" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Generate PDF Report" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.GenPdf], Source={StaticResource Loc}}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+T" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Toggle Light / Dark theme" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.ToggleTheme], Source={StaticResource Loc}}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+L" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Lock screen now" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.LockScreen], Source={StaticResource Loc}}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+W" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Minimize window" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.Minimize], Source={StaticResource Loc}}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
 
-                    <!-- General -->
-                    <TextBlock Text="GENERAL" FontSize="10" FontWeight="SemiBold"
+                    <TextBlock Text="{Binding [Shortcut.General], Source={StaticResource Loc}}" FontSize="10" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextMutedBrush}" Margin="0,12,0,10"/>
                     <Grid Margin="0,0,0,5"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="F1" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Show / hide keyboard shortcuts overlay" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.ToggleOverlay], Source={StaticResource Loc}}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Esc" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Close overlay  /  go to Dashboard" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.CloseOverlay], Source={StaticResource Loc}}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                 </StackPanel>
             </Border>
 
-            <!-- ══ DANGER ZONE ═════════════════════════════════════════════ -->
             <Border Margin="0,0,0,20" CornerRadius="16" Padding="20"
                     BorderThickness="1" BorderBrush="#80C0392B"
                     Background="#10C0392B">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <TextBlock Text="🗑️" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Danger Zone" FontSize="14" FontWeight="SemiBold"
+                        <TextBlock Text="{Binding [Section.DangerZone], Source={StaticResource Loc}}" FontSize="14" FontWeight="SemiBold"
                                    Foreground="#E74C3C" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"
-                               TextWrapping="Wrap" Margin="0,0,0,18">
-                        Permanently delete your account and all associated data
-                        (transactions, budgets, goals, recurring transactions).
-                        This action cannot be undone.
-                    </TextBlock>
+                    <TextBlock Text="{Binding [Settings.DangerRunDesc], Source={StaticResource Loc}}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"
+                               TextWrapping="Wrap" Margin="0,0,0,18"/>
 
-                    <Button Content="Delete My Account"
+                    <Button Content="{Binding [Btn.DeleteAccount], Source={StaticResource Loc}}"
                             Style="{StaticResource DangerButtonStyle}"
                             HorizontalAlignment="Left"
                             Command="{Binding DeleteAccountCommand}"/>

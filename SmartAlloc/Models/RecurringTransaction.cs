@@ -9,7 +9,8 @@ public class RecurringTransaction
     public TransactionType Type { get; set; }
     public int DayOfMonth { get; set; } = 1;
     public string? LastRunYearMonth { get; set; }
-
+    public int ReminderDaysBefore { get; set; } = 0;
+    public string Color { get; set; } = "#6C63FF";
     public int UserId { get; set; }
 
     public string TypeLabel => Type == TransactionType.Income ? "Income" : "Expense";

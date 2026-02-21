@@ -2,7 +2,9 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:conv="clr-namespace:SmartAlloc.Converters">
+             xmlns:conv="clr-namespace:SmartAlloc.Converters"
+             xmlns:svc="clr-namespace:SmartAlloc.Services"
+             ShutdownMode="OnExplicitShutdown">
 
     <Application.Resources>
         <ResourceDictionary>
@@ -15,11 +17,18 @@
                 <ResourceDictionary Source="Themes/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Converters -->
             <conv:PinDotsConverter x:Key="PinDotsConverter"/>
             <conv:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
             <conv:BoolToVisibilityConverter x:Key="BoolToVisConverter"/>
+            <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisConverter"/>
+            <conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
+            <conv:StringToColorConverter x:Key="StringToColorConverter"/>
+            <conv:TxTypeColorConverter x:Key="TxTypeColorConverter"/>
             <conv:StringToVisibilityConverter x:Key="StringToVisConverter"/>
+            <conv:MoneyDisplayConverter x:Key="MoneyDisplayConverter"/>
+            <conv:ReminderDaysLabelConverter x:Key="ReminderDaysLabelConverter"/>
+            <conv:CategoryNameConverter x:Key="CategoryNameConverter"/>
+            <svc:LocalizationProxy x:Key="Loc"/>
         </ResourceDictionary>
     </Application.Resources>
 

@@ -14,6 +14,7 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly SnackbarService _snackbar;
     private readonly CurrentUserService _currentUser;
     private readonly DatabaseContext _db;
+    private readonly LocalizationService _localization;
 
     [ObservableProperty] private string _currentPin = string.Empty;
     [ObservableProperty] private string _newPin = string.Empty;
@@ -25,6 +26,10 @@ public partial class SettingsViewModel : BaseViewModel
     private static readonly int[] AutoLockMinutes = [0, 5, 10, 15, 30];
 
     [ObservableProperty] private int _selectedAutoLockIndex;
+
+    public List<LanguageOption> AvailableLanguages => LocalizationService.AvailableLanguages;
+
+    [ObservableProperty] private LanguageOption _selectedLanguage = LocalizationService.AvailableLanguages[0];
 
     public event Action? LogoutRequested;
 
@@ -42,6 +47,7 @@ public partial class SettingsViewModel : BaseViewModel
         _snackbar = snackbar;
         _currentUser = currentUser;
         _db = db;
+        _localization = LocalizationService.Current;
     }
 
     public void Load()
@@ -60,6 +66,18 @@ public partial class SettingsViewModel : BaseViewModel
         {
             SelectedAutoLockIndex = 0;
         }
+
+        SelectedLanguage = AvailableLanguages.FirstOrDefault(l => l.Code == _localization.CurrentLanguage)
+                           ?? AvailableLanguages[0];
+    }
+
+    partial void OnSelectedLanguageChanged(LanguageOption value)
+    {
+        if (value != null && value.Code != _localization.CurrentLanguage)
+        {
+            _localization.SetLanguage(value.Code, _db);
+            _snackbar.ShowSuccess($"Language changed to {value.DisplayName}.");
+        }
     }
 
     [RelayCommand]
@@ -73,6 +91,16 @@ public partial class SettingsViewModel : BaseViewModel
         if (string.IsNullOrEmpty(NewPin))
         {
             _snackbar.ShowWarning("Enter a new PIN.");
+            return;
+        }
+        if (NewPin.Length < 4)
+        {
+            _snackbar.ShowWarning("PIN must be at least 4 digits.");
+            return;
+        }
+        if (!NewPin.All(char.IsDigit) || !CurrentPin.All(char.IsDigit))
+        {
+            _snackbar.ShowWarning("PIN must contain digits only.");
             return;
         }
         if (NewPin != ConfirmNewPin)

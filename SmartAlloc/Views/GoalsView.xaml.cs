@@ -83,6 +83,17 @@ public partial class GoalsView : UserControl
         InitializeComponent();
     }
 
+    private void MonthCell_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement fe
+            && fe.DataContext is GoalItemVM == false
+            && fe.DataContext is MonthCellVM cell
+            && DataContext is GoalsViewModel vm)
+        {
+            vm.SelectMonthCommand.Execute(cell);
+        }
+    }
+
     private void GoalCard_MouseMove(object sender, MouseEventArgs e)
     {
         if (e.LeftButton != MouseButtonState.Pressed

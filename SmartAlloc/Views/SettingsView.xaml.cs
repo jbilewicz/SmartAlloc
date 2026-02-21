@@ -1,5 +1,7 @@
 using SmartAlloc.ViewModels;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace SmartAlloc.Views;
 
@@ -8,6 +10,12 @@ public partial class SettingsView : UserControl
     public SettingsView()
     {
         InitializeComponent();
+
+        foreach (var box in new[] { PinCurrentBox, PinNewBox, PinConfirmBox })
+        {
+            box.PreviewTextInput += OnPinPreviewTextInput;
+            DataObject.AddPastingHandler(box, OnPinPaste);
+        }
 
         PinCurrentBox.PasswordChanged += (_, _) =>
         {
@@ -42,7 +50,7 @@ public partial class SettingsView : UserControl
         };
     }
 
-    private void ChangePinButton_Click(object sender, System.Windows.RoutedEventArgs e)
+    private void ChangePinButton_Click(object sender, RoutedEventArgs e)
     {
         if (DataContext is SettingsViewModel vm)
         {
@@ -50,5 +58,17 @@ public partial class SettingsView : UserControl
             vm.NewPin = PinNewBox.Password;
             vm.ConfirmNewPin = PinConfirmBox.Password;
         }
+    }
+
+    private static void OnPinPreviewTextInput(object sender, TextCompositionEventArgs e)
+    {
+        e.Handled = !e.Text.All(char.IsDigit);
+    }
+
+    private static void OnPinPaste(object sender, DataObjectPastingEventArgs e)
+    {
+        if (e.DataObject.GetData(DataFormats.Text) is string text && text.All(char.IsDigit))
+            return;
+        e.CancelCommand();
     }
 }

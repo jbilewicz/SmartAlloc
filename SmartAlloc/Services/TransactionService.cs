@@ -154,6 +154,19 @@ public class TransactionService
         return result;
     }
 
+    public int GetMonthsWithPositiveSavings(int lookback = 3)
+    {
+        int count = 0;
+        for (int i = 1; i <= lookback; i++)
+        {
+            var d = DateTime.Now.AddMonths(-i);
+            decimal income  = GetMonthlyIncome(d.Year, d.Month);
+            decimal expense = GetMonthlyExpense(d.Year, d.Month);
+            if (income - expense > 0) count++;
+        }
+        return count;
+    }
+
     public decimal GetAverageMonthlySavings(int months = 3)
     {
         decimal total = 0;

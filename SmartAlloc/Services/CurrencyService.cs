@@ -60,9 +60,9 @@ public class CurrencyService
 
     private static List<CurrencyRate> GetFallback() =>
     [
-        new() { Code = "USD", Currency = "dolar amerykański",  Mid = 4.01m, EffectiveDate = DateTime.Today },
-        new() { Code = "EUR", Currency = "euro",               Mid = 4.27m, EffectiveDate = DateTime.Today },
-        new() { Code = "CHF", Currency = "frank szwajcarski",  Mid = 4.52m, EffectiveDate = DateTime.Today },
-        new() { Code = "GBP", Currency = "funt szterling",     Mid = 5.05m, EffectiveDate = DateTime.Today },
+        new() { Code = "USD", Currency = "US dollar",      Mid = 4.01m, EffectiveDate = DateTime.Today },
+        new() { Code = "EUR", Currency = "euro",            Mid = 4.27m, EffectiveDate = DateTime.Today },
+        new() { Code = "CHF", Currency = "Swiss franc",     Mid = 4.52m, EffectiveDate = DateTime.Today },
+        new() { Code = "GBP", Currency = "British pound",   Mid = 5.05m, EffectiveDate = DateTime.Today },
     ];
 }

@@ -1,7 +1,8 @@
-﻿<UserControl x:Class="SmartAlloc.Views.BudgetsView"
+<UserControl x:Class="SmartAlloc.Views.BudgetsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:SmartAlloc.ViewModels"
+             xmlns:svc="clr-namespace:SmartAlloc.Services"
              Background="{DynamicResource BackgroundBrush}">
 
     <ScrollViewer Style="{StaticResource ScrollViewerStyle}">
@@ -12,17 +13,17 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Header -->
             <StackPanel Grid.Row="0" Margin="0,0,0,4">
-                <TextBlock Text="Budgets" Style="{StaticResource PageTitleStyle}"/>
-                <TextBlock Text="Control your monthly spending limits" Style="{StaticResource PageSubtitleStyle}"/>
+                <TextBlock Text="{Binding [Title.Budgets], Source={StaticResource Loc}}" Style="{StaticResource PageTitleStyle}"/>
+                <TextBlock Text="{Binding [Title.BudgetsSub], Source={StaticResource Loc}}" Style="{StaticResource PageSubtitleStyle}"/>
             </StackPanel>
 
-            <!-- Add Budget -->
             <Border Grid.Row="1" Style="{StaticResource GlassCardStyle}" Margin="0,0,0,20">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="140"/>
                         <ColumnDefinition Width="12"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="12"/>
@@ -35,22 +36,33 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Text="➕ New budget:" FontSize="13"
+                    <TextBlock Grid.Column="0" Text="{Binding [Section.NewBudget], Source={StaticResource Loc}}" FontSize="13"
                                Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
 
                     <ComboBox Grid.Column="2"
                               ItemsSource="{Binding Categories}"
                               SelectedItem="{Binding SelectedCategory}"
-                              Style="{StaticResource DarkComboStyle}"/>
+                              Style="{StaticResource DarkComboStyle}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate><TextBlock Text="{Binding Converter={StaticResource CategoryNameConverter}}"/></DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <StackPanel Grid.Column="4">
-                        <TextBlock Text="Limit (PLN)" Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Text="{Binding [Label.Description], Source={StaticResource Loc}}" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding NewDescription, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource DarkInputStyle}"
+                                 ToolTip="{Binding [Budget.DescTip], Source={StaticResource Loc}}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="6">
+                        <TextBlock Text="{Binding Source={x:Static svc:CurrencyDisplayService.Current}, Path=LimitLabel}" Style="{StaticResource LabelStyle}"/>
                         <TextBox Text="{Binding NewLimit, StringFormat={}{0:N2}, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource DarkInputStyle}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="6" Grid.ColumnSpan="3" VerticalAlignment="Bottom">
-                        <TextBlock Text="Period" Style="{StaticResource LabelStyle}"/>
+                    <StackPanel Grid.Column="8" Grid.ColumnSpan="3" VerticalAlignment="Bottom">
+                        <TextBlock Text="{Binding [Label.Period], Source={StaticResource Loc}}" Style="{StaticResource LabelStyle}"/>
                         <StackPanel Orientation="Horizontal">
                             <Button Content="&#8249;"
                                     Command="{Binding PreviousMonthCommand}"
@@ -67,15 +79,14 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <Button Grid.Column="10"
-                            Content="Save budget"
+                    <Button Grid.Column="12"
+                            Content="{Binding [Btn.SaveBudget], Source={StaticResource Loc}}"
                             Command="{Binding AddOrUpdateBudgetCommand}"
                             Style="{StaticResource PrimaryButtonStyle}"
                             VerticalAlignment="Bottom"/>
                 </Grid>
             </Border>
 
-            <!-- Budget Items -->
             <ItemsControl Grid.Row="2" ItemsSource="{Binding BudgetItems}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -95,10 +106,25 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <Grid Grid.Row="0" Margin="0,0,0,12">
-                                    <TextBlock Text="{Binding CategoryName}"
-                                               FontSize="14" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <Grid Grid.Row="0" Margin="0,0,0,8">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding CategoryName, Converter={StaticResource CategoryNameConverter}}"
+                                                   FontSize="14" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        <TextBlock Text="{Binding Description}"
+                                                   FontSize="11" Foreground="{DynamicResource TextMutedBrush}"
+                                                   Margin="0,1,0,0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Description}" Value="">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
                                     <Button Content="✕"
                                             Command="{Binding DataContext.DeleteBudgetCommand,
                                                 RelativeSource={RelativeSource AncestorType=ItemsControl}}"
@@ -110,14 +136,24 @@
                                 </Grid>
 
                                 <Grid Grid.Row="1" Margin="0,0,0,8">
-                                    <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}">
-                                        <Run Text="{Binding Spent, StringFormat={}{0:N2} PLN, Mode=OneWay}"/>
-                                        <Run Text=" / "/>
-                                        <Run Text="{Binding MonthlyLimit, StringFormat={}{0:N2} PLN, Mode=OneWay}"/>
-                                    </TextBlock>
-                                    <TextBlock Text="{Binding UsagePercent, StringFormat={}{0:N0}%}"
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding Converter="{StaticResource MoneyDisplayConverter}">
+                                            <Binding Path="Deposited"/>
+                                            <Binding Source="{x:Static svc:PrivacyService.Current}" Path="IsPrivate"/>
+                                            <Binding Source="{x:Static svc:CurrencyDisplayService.Current}" Path="SelectedCurrency"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                    <TextBlock Grid.Column="1" Text="{Binding UsagePercent, StringFormat={}{0:N0}%}"
                                                FontSize="12" FontWeight="SemiBold"
-                                               HorizontalAlignment="Right">
+                                               HorizontalAlignment="Right" VerticalAlignment="Center">
                                         <TextBlock.Foreground>
                                             <SolidColorBrush Color="{Binding StatusColor}"/>
                                         </TextBlock.Foreground>
@@ -134,13 +170,54 @@
                                     </ProgressBar.Foreground>
                                 </ProgressBar>
 
-                                <TextBlock Grid.Row="3"
-                                           FontSize="11"
-                                           Foreground="{DynamicResource TextMutedBrush}">
-                                    <Run Text="Remaining: "/>
-                                    <Run Text="{Binding Remaining, StringFormat={}{0:N2} PLN, Mode=OneWay}"
-                                         Foreground="{StaticResource SuccessBrush}"/>
-                                </TextBlock>
+                                <StackPanel Grid.Row="3" Orientation="Horizontal">
+                                    <TextBlock Text="{Binding [Label.Remaining], Source={StaticResource Loc}}"
+                                               FontSize="11" Foreground="{DynamicResource TextMutedBrush}"/>
+                                    <TextBlock FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextMutedBrush}">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource MoneyDisplayConverter}">
+                                                <Binding Path="Remaining"/>
+                                                <Binding Source="{x:Static svc:PrivacyService.Current}" Path="IsPrivate"/>
+                                                <Binding Source="{x:Static svc:CurrencyDisplayService.Current}" Path="SelectedCurrency"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <Button Grid.Row="4" Content="+"
+                                        FontSize="18" FontWeight="Bold"
+                                        Foreground="#27AE60" Background="Transparent"
+                                        BorderBrush="#27AE60" BorderThickness="1.5"
+                                        Cursor="Hand" Padding="6,2"
+                                        Width="36" Height="36"
+                                        HorizontalAlignment="Right"
+                                        Margin="0,8,0,0"
+                                        Command="{Binding DataContext.DepositToBudgetCommand,
+                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip="{Binding [Budget.DepositTip], Source={StaticResource Loc}}">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    CornerRadius="18">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#27AE60"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
                             </Grid>
                         </Border>
                     </DataTemplate>

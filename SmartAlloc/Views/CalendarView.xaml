@@ -1,0 +1,413 @@
+<UserControl x:Class="SmartAlloc.Views.CalendarView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:SmartAlloc.ViewModels"
+             xmlns:m="clr-namespace:SmartAlloc.Models"
+             xmlns:conv="clr-namespace:SmartAlloc.Converters"
+             Background="{DynamicResource BackgroundBrush}">
+
+    <UserControl.Resources>
+        <conv:StringToColorConverter x:Key="StringToColorConverter"/>
+        <conv:TxTypeColorConverter   x:Key="TxTypeColorConverter"/>
+        <Style x:Key="DayCellStyle" TargetType="Border">
+            <Setter Property="MinHeight" Value="72"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Background" Value="{DynamicResource CardBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="28,20,28,28">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="16"/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,4">
+                <TextBlock Text="Payment Calendar" Style="{StaticResource PageTitleStyle}"/>
+                <TextBlock Text="View and set reminders for recurring payments"
+                           Style="{StaticResource PageSubtitleStyle}"/>
+            </StackPanel>
+
+            <Grid Grid.Row="1" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="◀"
+                        Command="{Binding PreviousMonthCommand}"
+                        Style="{StaticResource OutlineButtonStyle}"
+                        Width="36" Padding="4,8"/>
+                <TextBlock Grid.Column="1" Text="{Binding MonthLabel}"
+                           FontSize="18" FontWeight="Bold"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Button Grid.Column="2" Content="▶"
+                        Command="{Binding NextMonthCommand}"
+                        Style="{StaticResource OutlineButtonStyle}"
+                        Width="36" Padding="4,8"/>
+            </Grid>
+
+            <ItemsControl Grid.Row="2" ItemsSource="{Binding DayHeaders}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="7"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto"
+                          Style="{StaticResource ScrollViewerStyle}">
+                <ItemsControl ItemsSource="{Binding Days}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="7"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:CalendarDayVM}">
+                            <Border MouseLeftButtonUp="DayCell_Click">
+                                <Border.Style>
+                                    <Style TargetType="Border" BasedOn="{StaticResource DayCellStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPadding}" Value="True">
+                                                <Setter Property="Opacity" Value="0"/>
+                                                <Setter Property="IsHitTestVisible" Value="False"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                                <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                                <Setter Property="BorderThickness" Value="2"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding HasItems}" Value="True">
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <LinearGradientBrush EndPoint="0,1">
+                                                            <GradientStop Color="#1A6C63FF" Offset="0"/>
+                                                            <GradientStop Color="#0A6C63FF" Offset="1"/>
+                                                        </LinearGradientBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+
+                                <Grid Margin="8,6">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="{Binding Day}"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimaryBrush}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                                        <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsWeekend}" Value="True">
+                                                        <Setter Property="Foreground" Value="{StaticResource WarningBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <StackPanel Grid.Row="1" Margin="0,4,0,0">
+                                        <ItemsControl ItemsSource="{Binding Items}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border CornerRadius="4" Padding="4,2" Margin="0,1">
+                                                        <Border.Background>
+                                                            <SolidColorBrush Color="{Binding Color, Converter={StaticResource StringToColorConverter}}"/>
+                                                        </Border.Background>
+                                                        <TextBlock FontSize="9" Foreground="White"
+                                                                   TextTrimming="CharacterEllipsis">
+                                                            <Run Text="{Binding CategoryName, Mode=OneWay}"/>
+                                                        </TextBlock>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <ItemsControl ItemsSource="{Binding Transactions}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type m:Transaction}">
+                                                    <Border CornerRadius="4" Padding="4,2" Margin="0,1">
+                                                        <Border.Background>
+                                                            <SolidColorBrush Color="{Binding Type, Converter={StaticResource TxTypeColorConverter}}"/>
+                                                        </Border.Background>
+                                                        <TextBlock FontSize="9" Foreground="White"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   Text="{Binding CategoryName, Mode=OneWay}"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+        <Border Grid.Column="2" Style="{StaticResource GlassCardStyle}"
+                VerticalAlignment="Top">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Style="{StaticResource ScrollViewerStyle}" MaxHeight="700">
+            <StackPanel>
+
+                <StackPanel Margin="0,0,0,16">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedDateLabel}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <TextBlock Text="➕ Add Transaction" Style="{StaticResource SectionTitleStyle}"/>
+                    <TextBlock Text="{Binding SelectedDateLabel}" FontSize="11"
+                               Foreground="{StaticResource AccentBrush}" Margin="0,-6,0,12"/>
+
+                    <TextBlock Text="Type" Style="{StaticResource LabelStyle}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <RadioButton Content="Expense" IsChecked="{Binding QuickIsExpense}"
+                                     Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,16,0"/>
+                        <RadioButton Content="Income"
+                                     IsChecked="{Binding QuickIsExpense, Converter={StaticResource InverseBoolConverter}}"
+                                     Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Amount" Style="{StaticResource LabelStyle}"/>
+                    <TextBox Text="{Binding QuickAmount, StringFormat={}{0:N2}, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource DarkInputStyle}" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="Category" Style="{StaticResource LabelStyle}"/>
+                    <ComboBox ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding QuickCategory}"
+                              Style="{StaticResource DarkComboStyle}" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="Note" Style="{StaticResource LabelStyle}"/>
+                    <TextBox Text="{Binding QuickNote, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource DarkInputStyle}" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="Colour" Style="{StaticResource LabelStyle}"/>
+                    <ItemsControl ItemsSource="{Binding PresetColors}" Margin="0,0,0,12">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel x:Name="QuickColorPanel"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="26" Height="26" CornerRadius="6" Margin="2" Cursor="Hand"
+                                        BorderThickness="0"
+                                        MouseLeftButtonUp="ColorSwatch_Click">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="{Binding Converter={StaticResource StringToColorConverter}}"/>
+                                    </Border.Background>
+                                    <TextBlock Text="✓" FontSize="12" FontWeight="Bold" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Visibility="Collapsed" x:Name="SwatchCheck"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button Content="➕ Add Transaction"
+                            Command="{Binding QuickAddTransactionCommand}"
+                            Style="{StaticResource SuccessButtonStyle}"
+                            HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <Separator Margin="0,0,0,16">
+                    <Separator.Style>
+                        <Style TargetType="Separator">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedDateLabel}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Separator.Style>
+                </Separator>
+                <TextBlock Text="🔔 Reminders" Style="{StaticResource SectionTitleStyle}"/>
+                <TextBlock Text="Click a day with a payment to configure its reminder."
+                           FontSize="11" Foreground="{DynamicResource TextMutedBrush}"
+                           TextWrapping="Wrap" Margin="0,0,0,16"/>
+
+                <Border Background="{DynamicResource SurfaceBrush}"
+                        CornerRadius="8" Padding="12" Margin="0,0,0,16">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedItem}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <StackPanel>
+                        <TextBlock FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   Text="{Binding SelectedItem.CategoryName}"/>
+                        <TextBlock FontSize="11" Foreground="{DynamicResource TextMutedBrush}"
+                                   Margin="0,2,0,0">
+                            <Run Text="{Binding SelectedItem.Amount, StringFormat={}{0:N2} PLN, Mode=OneWay}"/>
+                            <Run Text=" · day "/>
+                            <Run Text="{Binding SelectedItem.DayOfMonth, Mode=OneWay}"/>
+                            <Run Text=" of each month"/>
+                        </TextBlock>
+                        <TextBlock Text="{Binding SelectedItem.Note}"
+                                   FontSize="11" Foreground="{DynamicResource TextMutedBrush}"
+                                   Margin="0,2,0,12" TextWrapping="Wrap"/>
+
+                        <TextBlock Text="Remind me" Style="{StaticResource LabelStyle}"/>
+                        <ComboBox ItemsSource="{Binding ReminderOptions}"
+                                  SelectedItem="{Binding SelectedReminderDays}"
+                                  Style="{StaticResource DarkComboStyle}"
+                                  Margin="0,0,0,12">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock>
+                                        <TextBlock.Text>
+                                            <Binding>
+                                                <Binding.Converter>
+                                                    <conv:ReminderDaysLabelConverter/>
+                                                </Binding.Converter>
+                                            </Binding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <Button Content="💾 Save reminder"
+                                Command="{Binding SaveReminderCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="ALL RECURRING PAYMENTS" FontSize="10" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
+                <ItemsControl ItemsSource="{Binding AllItems}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Padding="10,8" Margin="0,0,0,6"
+                                    Background="{DynamicResource SurfaceBrush}"
+                                    CornerRadius="8">
+                                <Grid>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding CategoryName}"
+                                                   FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        <TextBlock FontSize="11" Foreground="{DynamicResource TextMutedBrush}">
+                                            <Run Text="{Binding Amount, StringFormat={}{0:N2} PLN, Mode=OneWay}"/>
+                                            <Run Text=" · day "/>
+                                            <Run Text="{Binding DayOfMonth, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <TextBlock Text="🔔" FontSize="14"
+                                               HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ReminderDaysBefore}"
+                                                                 Value="0">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Separator Margin="0,12,0,12"/>
+                <TextBlock Text="🔁 Add Recurring Payment" Style="{StaticResource SectionTitleStyle}"/>
+
+                <TextBlock Text="Type" Style="{StaticResource LabelStyle}"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <RadioButton Content="Expense" IsChecked="{Binding NewRecurringIsExpense}"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,16,0"/>
+                    <RadioButton Content="Income"
+                                 IsChecked="{Binding NewRecurringIsExpense, Converter={StaticResource InverseBoolConverter}}"
+                                 Foreground="{DynamicResource TextPrimaryBrush}"/>
+                </StackPanel>
+
+                <TextBlock Text="Name / Category" Style="{StaticResource LabelStyle}"/>
+                <TextBox Text="{Binding NewRecurringCategory, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource DarkInputStyle}" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Amount" Style="{StaticResource LabelStyle}"/>
+                <TextBox Text="{Binding NewRecurringAmount, StringFormat={}{0:N2}, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource DarkInputStyle}" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Day of month (1–28)" Style="{StaticResource LabelStyle}"/>
+                <TextBox Text="{Binding NewRecurringDay, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource DarkInputStyle}" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Note" Style="{StaticResource LabelStyle}"/>
+                <TextBox Text="{Binding NewRecurringNote, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource DarkInputStyle}" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Colour" Style="{StaticResource LabelStyle}"/>
+                <ItemsControl ItemsSource="{Binding PresetColors}" Margin="0,0,0,12">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><WrapPanel x:Name="RecurringColorPanel"/></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="26" Height="26" CornerRadius="6" Margin="2" Cursor="Hand"
+                                    BorderThickness="0"
+                                    MouseLeftButtonUp="RecurringColorSwatch_Click">
+                                <Border.Background>
+                                    <SolidColorBrush Color="{Binding Converter={StaticResource StringToColorConverter}}"/>
+                                </Border.Background>
+                                <TextBlock Text="✓" FontSize="12" FontWeight="Bold" Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Visibility="Collapsed" x:Name="SwatchCheck"/>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Button Content="🔁 Save Recurring"
+                        Command="{Binding AddRecurringEntryCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        HorizontalAlignment="Stretch" Margin="0,0,0,4"/>
+            </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

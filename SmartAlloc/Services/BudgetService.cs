@@ -29,14 +29,7 @@ public class BudgetService
         cmd.Parameters.AddWithValue("@uid", Uid);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
-            list.Add(new Budget
-            {
-                Id = reader.GetInt32(0),
-                CategoryName = reader.GetString(1),
-                MonthlyLimit = reader.GetDecimal(2),
-                Month = reader.GetInt32(3),
-                Year = reader.GetInt32(4)
-            });
+            list.Add(MapBudget(reader));
         return list;
     }
 
@@ -51,14 +44,7 @@ public class BudgetService
         cmd.Parameters.AddWithValue("@uid", Uid);
         using var reader = cmd.ExecuteReader();
         if (!reader.Read()) return null;
-        return new Budget
-        {
-            Id = reader.GetInt32(0),
-            CategoryName = reader.GetString(1),
-            MonthlyLimit = reader.GetDecimal(2),
-            Month = reader.GetInt32(3),
-            Year = reader.GetInt32(4)
-        };
+        return MapBudget(reader);
     }
 
     public void Upsert(Budget b)
@@ -66,11 +52,12 @@ public class BudgetService
         var conn = _db.GetConnection();
 
         using var check = conn.CreateCommand();
-        check.CommandText = "SELECT Id FROM Budgets WHERE CategoryName=@cat AND Month=@m AND Year=@y AND UserId=@uid LIMIT 1";
+        check.CommandText = "SELECT Id FROM Budgets WHERE CategoryName=@cat AND Month=@m AND Year=@y AND UserId=@uid AND Description=@desc LIMIT 1";
         check.Parameters.AddWithValue("@cat", b.CategoryName);
         check.Parameters.AddWithValue("@m", b.Month);
         check.Parameters.AddWithValue("@y", b.Year);
         check.Parameters.AddWithValue("@uid", Uid);
+        check.Parameters.AddWithValue("@desc", b.Description);
         var existingId = check.ExecuteScalar();
 
         if (existingId != null)
@@ -85,13 +72,14 @@ public class BudgetService
         {
             using var insert = conn.CreateCommand();
             insert.CommandText = @"
-                INSERT INTO Budgets (CategoryName, MonthlyLimit, Month, Year, UserId)
-                VALUES (@cat, @limit, @m, @y, @uid)";
+                INSERT INTO Budgets (CategoryName, MonthlyLimit, Month, Year, UserId, Description)
+                VALUES (@cat, @limit, @m, @y, @uid, @desc)";
             insert.Parameters.AddWithValue("@cat", b.CategoryName);
             insert.Parameters.AddWithValue("@limit", b.MonthlyLimit);
             insert.Parameters.AddWithValue("@m", b.Month);
             insert.Parameters.AddWithValue("@y", b.Year);
             insert.Parameters.AddWithValue("@uid", Uid);
+            insert.Parameters.AddWithValue("@desc", b.Description);
             insert.ExecuteNonQuery();
         }
     }
@@ -105,4 +93,26 @@ public class BudgetService
         cmd.Parameters.AddWithValue("@uid", Uid);
         cmd.ExecuteNonQuery();
     }
+
+    public void AddDeposit(int budgetId, decimal plnAmount)
+    {
+        var conn = _db.GetConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE Budgets SET Deposited = Deposited + @amount WHERE Id=@id AND UserId=@uid";
+        cmd.Parameters.AddWithValue("@amount", plnAmount);
+        cmd.Parameters.AddWithValue("@id", budgetId);
+        cmd.Parameters.AddWithValue("@uid", Uid);
+        cmd.ExecuteNonQuery();
+    }
+
+    private static Budget MapBudget(SqliteDataReader reader) => new()
+    {
+        Id = reader.GetInt32(0),
+        CategoryName = reader.GetString(1),
+        MonthlyLimit = reader.GetDecimal(2),
+        Month = reader.GetInt32(3),
+        Year = reader.GetInt32(4),
+        Description = reader.FieldCount > 6 && !reader.IsDBNull(6) ? reader.GetString(6) : "",
+        Deposited = reader.FieldCount > 7 && !reader.IsDBNull(7) ? reader.GetDecimal(7) : 0m
+    };
 }

@@ -13,8 +13,9 @@ namespace SmartAlloc.ViewModels;
 
 public partial class StatisticsViewModel : BaseViewModel
 {
-    private readonly TransactionService _txService;
-    private readonly ThemeService _themeService;
+    private readonly TransactionService     _txService;
+    private readonly ThemeService           _themeService;
+    private readonly CurrencyDisplayService _currencyDisplay;
 
     [ObservableProperty] private decimal _avgDailyExpense;
     [ObservableProperty] private decimal _avgDailyIncome;
@@ -48,10 +49,13 @@ public partial class StatisticsViewModel : BaseViewModel
         }
     ];
 
-    public StatisticsViewModel(TransactionService txService, ThemeService themeService)
+    public StatisticsViewModel(TransactionService txService, ThemeService themeService,
+                                 CurrencyDisplayService currencyDisplay)
     {
-        _txService = txService;
-        _themeService = themeService;
+        _txService       = txService;
+        _themeService    = themeService;
+        _currencyDisplay = currencyDisplay;
+        _currencyDisplay.DisplayCurrencyChanged += Load;
     }
 
     [RelayCommand]
@@ -105,7 +109,7 @@ public partial class StatisticsViewModel : BaseViewModel
             var total = expenses.Values.Sum();
             TopExpenseCategories.Add(new CategoryStat
             {
-                Name = kvp.Key,
+                Name = LocalizationService.Current.TranslateCategory(kvp.Key),
                 Amount = kvp.Value,
                 Percentage = total > 0 ? (double)(kvp.Value / total * 100) : 0
             });
@@ -114,15 +118,16 @@ public partial class StatisticsViewModel : BaseViewModel
 
     private void LoadComparisonChart()
     {
-        var incomeValues = new List<double>();
+        var incomeValues  = new List<double>();
         var expenseValues = new List<double>();
-        var labels = new List<string>();
+        var labels        = new List<string>();
+        var sym           = _currencyDisplay.Symbol;
 
         for (int i = 5; i >= 0; i--)
         {
             var d = DateTime.Now.AddMonths(-i);
-            incomeValues.Add((double)_txService.GetMonthlyIncome(d.Year, d.Month));
-            expenseValues.Add((double)_txService.GetMonthlyExpense(d.Year, d.Month));
+            incomeValues.Add((double)_currencyDisplay.Convert(_txService.GetMonthlyIncome(d.Year, d.Month)));
+            expenseValues.Add((double)_currencyDisplay.Convert(_txService.GetMonthlyExpense(d.Year, d.Month)));
             labels.Add(d.ToString("MMM yy", CultureInfo.InvariantCulture));
         }
 
@@ -155,17 +160,28 @@ public partial class StatisticsViewModel : BaseViewModel
                 SeparatorsPaint = new SolidColorPaint(SKColor.Parse("#2A2A4A")) { StrokeThickness = 1 }
             }
         ];
+
+        ComparisonYAxes =
+        [
+            new Axis
+            {
+                LabelsPaint = new SolidColorPaint(SKColor.Parse("#888888")),
+                Labeler = v => $"{v:N0} {sym}",
+                SeparatorsPaint = new SolidColorPaint(SKColor.Parse("#2A2A4A")) { StrokeThickness = 1 }
+            }
+        ];
     }
 
     private void LoadTrendChart()
     {
         var values = new List<double>();
         var labels = new List<string>();
+        var sym    = _currencyDisplay.Symbol;
 
         for (int i = 11; i >= 0; i--)
         {
             var d = DateTime.Now.AddMonths(-i);
-            values.Add((double)_txService.GetMonthlyExpense(d.Year, d.Month));
+            values.Add((double)_currencyDisplay.Convert(_txService.GetMonthlyExpense(d.Year, d.Month)));
             labels.Add(d.ToString("MMM", CultureInfo.InvariantCulture));
         }
 
@@ -192,6 +208,16 @@ public partial class StatisticsViewModel : BaseViewModel
             {
                 Labels = labels,
                 LabelsPaint = new SolidColorPaint(SKColor.Parse("#888888")),
+                SeparatorsPaint = new SolidColorPaint(SKColor.Parse("#2A2A4A")) { StrokeThickness = 1 }
+            }
+        ];
+
+        TrendYAxes =
+        [
+            new Axis
+            {
+                LabelsPaint = new SolidColorPaint(SKColor.Parse("#888888")),
+                Labeler = v => $"{v:N0} {sym}",
                 SeparatorsPaint = new SolidColorPaint(SKColor.Parse("#2A2A4A")) { StrokeThickness = 1 }
             }
         ];

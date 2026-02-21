@@ -14,6 +14,7 @@ public partial class TransactionsViewModel : BaseViewModel
     private readonly BudgetService _budgetService;
     private readonly RecurringTransactionService _recurringService;
     private readonly SnackbarService _snackbar;
+    private readonly CurrencyDisplayService _currencyDisplay;
 
     [ObservableProperty] private ObservableCollection<Transaction> _transactions = [];
     [ObservableProperty] private ObservableCollection<string> _categories = [];
@@ -40,13 +41,14 @@ public partial class TransactionsViewModel : BaseViewModel
 
     public TransactionsViewModel(TransactionService txService, CategoryService catService,
                                   BudgetService budgetService, RecurringTransactionService recurringService,
-                                  SnackbarService snackbar)
+                                  SnackbarService snackbar, CurrencyDisplayService currencyDisplay)
     {
         _txService = txService;
         _catService = catService;
         _budgetService = budgetService;
         _recurringService = recurringService;
         _snackbar = snackbar;
+        _currencyDisplay = currencyDisplay;
     }
 
     [RelayCommand]
@@ -93,7 +95,7 @@ public partial class TransactionsViewModel : BaseViewModel
 
         _txService.Add(new Transaction
         {
-            Amount = NewAmount,
+            Amount = _currencyDisplay.ConvertToPln(NewAmount),
             Date = NewDate,
             CategoryName = NewCategory,
             Note = NewNote,
@@ -118,12 +120,15 @@ public partial class TransactionsViewModel : BaseViewModel
         var expenses = _txService.GetExpensesByCategory(today.Year, today.Month);
         expenses.TryGetValue(categoryName, out var spent);
         var pct = budget.MonthlyLimit > 0 ? (double)(spent / budget.MonthlyLimit * 100) : 0;
+        var sym = _currencyDisplay.Symbol;
+        var dispSpent = _currencyDisplay.Convert(spent);
+        var dispLimit = _currencyDisplay.Convert(budget.MonthlyLimit);
         if (pct >= 100)
             _snackbar.ShowWarning(
-                $"Budget exceeded for \"{categoryName}\"! Spent: {spent:N2} / {budget.MonthlyLimit:N2} PLN");
+                $"Budget exceeded for \"{categoryName}\"! Spent: {dispSpent:N2} / {dispLimit:N2} {sym}");
         else if (pct >= 90)
             _snackbar.ShowWarning(
-                $"{pct:N0}% of budget used for \"{categoryName}\". Spent: {spent:N2} / {budget.MonthlyLimit:N2} PLN");
+                $"{pct:N0}% of budget used for \"{categoryName}\". Spent: {dispSpent:N2} / {dispLimit:N2} {sym}");
     }
 
     [RelayCommand]
@@ -154,7 +159,7 @@ public partial class TransactionsViewModel : BaseViewModel
         }
         _recurringService.Add(new RecurringTransaction
         {
-            Amount = NewRecurringAmount,
+            Amount = _currencyDisplay.ConvertToPln(NewRecurringAmount),
             CategoryName = NewRecurringCategory,
             Note = NewRecurringNote,
             Type = NewRecurringIsIncome ? TransactionType.Income : TransactionType.Expense,

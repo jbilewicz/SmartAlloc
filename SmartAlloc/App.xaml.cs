@@ -33,9 +33,12 @@ public partial class App : Application
         services.AddSingleton<CategoryService>();
         services.AddSingleton<GoalService>();
         services.AddSingleton<CurrencyService>();
+        services.AddSingleton<CurrencyDisplayService>();
+        services.AddSingleton<PrivacyService>();
         services.AddSingleton<ReportService>();
         services.AddSingleton<ThemeService>();
         services.AddSingleton<RecurringTransactionService>();
+        services.AddSingleton<ReminderService>();
         services.AddSingleton<SnackbarService>();
         services.AddSingleton<AuthService>();
         services.AddSingleton<CurrentUserService>();
@@ -47,12 +50,24 @@ public partial class App : Application
         services.AddSingleton<GoalsViewModel>();
         services.AddSingleton<StatisticsViewModel>();
         services.AddSingleton<SettingsViewModel>();
+        services.AddSingleton<CalendarViewModel>();
         services.AddSingleton<MainViewModel>();
         services.AddTransient<LoginViewModel>();
 
         services.AddSingleton<MainWindow>();
 
         Services = services.BuildServiceProvider();
+
+        var privacySvc   = Services.GetRequiredService<PrivacyService>();
+        var currencyDisp = Services.GetRequiredService<CurrencyDisplayService>();
+        try { await currencyDisp.InitializeAsync(); }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Currency init failed: {ex.Message}");
+        }
+
+        var db = Services.GetRequiredService<DatabaseContext>();
+        LocalizationService.Current.LoadSaved(db);
 
         var mainVM = Services.GetRequiredService<MainViewModel>();
         var mainWindow = Services.GetRequiredService<MainWindow>();

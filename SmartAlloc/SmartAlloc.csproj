@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ApplicationIcon>Resources\SmartAlloc.ico</ApplicationIcon>
@@ -29,6 +30,10 @@
     <PackageReference Include="QuestPDF" Version="2025.1.2" />
     <PackageReference Include="System.Net.Http.Json" Version="9.0.2" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\SmartAlloc.ico" CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
 
 </Project>

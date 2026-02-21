@@ -14,18 +14,16 @@ namespace SmartAlloc.ViewModels;
 
 public partial class DashboardViewModel : BaseViewModel
 {
-    private readonly TransactionService _txService;
-    private readonly CurrencyService _currencyService;
+    private readonly TransactionService     _txService;
+    private readonly CurrencyService        _currencyService;
+    private readonly CurrencyDisplayService _currencyDisplay;
 
     [ObservableProperty] private decimal _balance;
     [ObservableProperty] private decimal _totalIncome;
     [ObservableProperty] private decimal _totalExpense;
-    [ObservableProperty] private string _convertedBalance = "";
-    [ObservableProperty] private string _selectedCurrency = "PLN";
-    [ObservableProperty] private List<string> _currencies = ["PLN", "USD", "EUR", "CHF", "GBP"];
-    [ObservableProperty] private string _lastUpdated = "";
-    [ObservableProperty] private bool _ratesLoaded;
-    [ObservableProperty] private string _rateInfo = "Loading rates...";
+    [ObservableProperty] private string  _lastUpdated = "";
+    [ObservableProperty] private bool    _ratesLoaded;
+    [ObservableProperty] private string  _rateInfo = "Loading rates...";
 
     private List<CurrencyRate> _rates = [];
 
@@ -52,14 +50,21 @@ public partial class DashboardViewModel : BaseViewModel
         }
     ];
 
-    public DashboardViewModel(TransactionService txService, CurrencyService currencyService, ThemeService themeService)
+    public DashboardViewModel(TransactionService txService, CurrencyService currencyService,
+                              CurrencyDisplayService currencyDisplay, ThemeService themeService)
     {
-        _txService = txService;
-        _currencyService = currencyService;
+        _txService        = txService;
+        _currencyService  = currencyService;
+        _currencyDisplay  = currencyDisplay;
         LegendTextPaint = new SolidColorPaint(themeService.IsDark ? SKColors.White : SKColor.Parse("#1A1A2E"));
         themeService.ThemeChanged += () =>
         {
             LegendTextPaint = new SolidColorPaint(themeService.IsDark ? SKColors.White : SKColor.Parse("#1A1A2E"));
+            LoadPieChart();
+            LoadLineChart();
+        };
+        _currencyDisplay.DisplayCurrencyChanged += () =>
+        {
             LoadPieChart();
             LoadLineChart();
         };
@@ -93,8 +98,8 @@ public partial class DashboardViewModel : BaseViewModel
             .OrderByDescending(x => x.Value)
             .Select(kvp => (ISeries)new PieSeries<decimal>
             {
-                Values = [kvp.Value],
-                Name = StripEmoji(kvp.Key),
+                Values = [_currencyDisplay.Convert(kvp.Value)],
+                Name = StripEmoji(LocalizationService.Current.TranslateCategory(kvp.Key)),
                 Fill = new SolidColorPaint(SKColor.Parse(colors[i++ % colors.Length])),
                 DataLabelsPaint = new SolidColorPaint(SKColors.White),
                 DataLabelsSize = 11,
@@ -110,8 +115,9 @@ public partial class DashboardViewModel : BaseViewModel
     private void LoadLineChart()
     {
         var history = _txService.GetMonthlyBalanceHistory(6);
-        var values = history.Select(h => new ObservableValue((double)h.Balance)).ToArray();
-        var labels = history.Select(h => h.Month.ToString("MMM yy")).ToArray();
+        var sym     = _currencyDisplay.Symbol;
+        var values  = history.Select(h => new ObservableValue((double)_currencyDisplay.Convert(h.Balance))).ToArray();
+        var labels  = history.Select(h => h.Month.ToString("MMM yy")).ToArray();
 
         LineSeries =
         [
@@ -139,30 +145,28 @@ public partial class DashboardViewModel : BaseViewModel
                 SeparatorsPaint = new SolidColorPaint(SKColor.Parse("#AAAACC")) { StrokeThickness = 1 }
             }
         ];
+
+        YAxes =
+        [
+            new Axis
+            {
+                LabelsPaint = new SolidColorPaint(SKColor.Parse("#888888")),
+                Labeler = v => $"{v:N0} {sym}",
+                SeparatorsPaint = new SolidColorPaint(SKColor.Parse("#AAAACC")) { StrokeThickness = 1 }
+            }
+        ];
     }
 
     private async Task LoadCurrencyAsync()
     {
         _rates = await _currencyService.GetRatesAsync();
         RatesLoaded = _rates.Count > 0;
-        UpdateConvertedBalance();
+        _currencyDisplay.UpdateRates(_rates);
+
         RateInfo = _rates.Count > 0
             ? $"NBP: {string.Join("  •  ", _rates.Select(r => $"{r.Code} {r.Mid:N4}"))}"
             : "No NBP connection – using default values";
         LastUpdated = $"Updated: {DateTime.Now:HH:mm}";
-    }
-
-    partial void OnSelectedCurrencyChanged(string value) => UpdateConvertedBalance();
-
-    private void UpdateConvertedBalance()
-    {
-        if (!_rates.Any() || SelectedCurrency == "PLN")
-        {
-            ConvertedBalance = $"{Balance:N2} PLN";
-            return;
-        }
-        var converted = _currencyService.ConvertFromPln(Balance, SelectedCurrency, _rates);
-        ConvertedBalance = $"{converted:N2} {SelectedCurrency}";
     }
 
     [RelayCommand]

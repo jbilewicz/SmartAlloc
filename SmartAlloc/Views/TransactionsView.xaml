@@ -1,7 +1,8 @@
-﻿<UserControl x:Class="SmartAlloc.Views.TransactionsView"
+<UserControl x:Class="SmartAlloc.Views.TransactionsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:models="clr-namespace:SmartAlloc.Models"
+             xmlns:svc="clr-namespace:SmartAlloc.Services"
              Background="{DynamicResource BackgroundBrush}">
 
     <Grid Margin="28,20,28,28">
@@ -12,13 +13,11 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,4">
-            <TextBlock Text="Transactions" Style="{StaticResource PageTitleStyle}"/>
-            <TextBlock Text="Manage your income and expenses" Style="{StaticResource PageSubtitleStyle}"/>
+            <TextBlock Text="{Binding [Title.Transactions], Source={StaticResource Loc}}" Style="{StaticResource PageTitleStyle}"/>
+            <TextBlock Text="{Binding [Title.TransactionsSub], Source={StaticResource Loc}}" Style="{StaticResource PageSubtitleStyle}"/>
         </StackPanel>
 
-        <!-- Add form + Filters -->
         <Grid Grid.Row="1" Margin="0,0,0,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -26,10 +25,9 @@
                 <ColumnDefinition Width="320"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Add Transaction Card -->
             <Border Grid.Column="0" Style="{StaticResource GlassCardStyle}">
                 <StackPanel>
-                    <TextBlock Text="➕ New transaction" Style="{StaticResource SectionTitleStyle}"/>
+                    <TextBlock Text="{Binding [Section.NewTx], Source={StaticResource Loc}}" Style="{StaticResource SectionTitleStyle}"/>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -41,13 +39,13 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Amount (PLN)" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Text="{Binding Source={x:Static svc:CurrencyDisplayService.Current}, Path=AmountLabel}" Style="{StaticResource LabelStyle}"/>
                             <TextBox Text="{Binding NewAmount, StringFormat={}{0:N2}, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource DarkInputStyle}"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="Date" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Text="{Binding [Label.Date], Source={StaticResource Loc}}" Style="{StaticResource LabelStyle}"/>
                             <DatePicker SelectedDate="{Binding NewDate}"
                                         Background="{DynamicResource InputBackgroundBrush}"
                                         Foreground="{DynamicResource TextPrimaryBrush}"
@@ -56,10 +54,14 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="4">
-                            <TextBlock Text="Category" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Text="{Binding [Label.Category], Source={StaticResource Loc}}" Style="{StaticResource LabelStyle}"/>
                             <ComboBox ItemsSource="{Binding Categories}"
                                       SelectedItem="{Binding NewCategory}"
-                                      Style="{StaticResource DarkComboStyle}"/>
+                                      Style="{StaticResource DarkComboStyle}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate><TextBlock Text="{Binding Converter={StaticResource CategoryNameConverter}}"/></DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                         </StackPanel>
                     </Grid>
 
@@ -71,7 +73,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Note" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Text="{Binding [Label.Note], Source={StaticResource Loc}}" Style="{StaticResource LabelStyle}"/>
                             <TextBox Text="{Binding NewNote, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource DarkInputStyle}"/>
                         </StackPanel>
@@ -79,13 +81,13 @@
                         <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Orientation="Horizontal">
                             <Border Style="{StaticResource TagStyle}" Margin="0,0,8,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <RadioButton Content="📉 Expense" IsChecked="{Binding IsExpense}"
+                                    <RadioButton Content="{Binding [Tx.ExpenseRadio], Source={StaticResource Loc}}" IsChecked="{Binding IsExpense}"
                                                  Foreground="{StaticResource DangerBrush}" Margin="0,0,4,0"/>
-                                    <RadioButton Content="📈 Income" IsChecked="{Binding IsIncome}"
+                                    <RadioButton Content="{Binding [Tx.IncomeRadio], Source={StaticResource Loc}}" IsChecked="{Binding IsIncome}"
                                                  Foreground="{StaticResource SuccessBrush}"/>
                                 </StackPanel>
                             </Border>
-                            <Button Content="Add transaction"
+                            <Button Content="{Binding [Btn.AddTransaction], Source={StaticResource Loc}}"
                                     Command="{Binding AddTransactionCommand}"
                                     Style="{StaticResource PrimaryButtonStyle}"/>
                         </StackPanel>
@@ -93,23 +95,25 @@
                 </StackPanel>
             </Border>
 
-            <!-- Filters Card -->
             <Border Grid.Column="2" Style="{StaticResource GlassCardStyle}">
                 <StackPanel>
-                    <TextBlock Text="🔍 Filters" Style="{StaticResource SectionTitleStyle}"/>
-                    <TextBlock Text="Search" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Text="{Binding [Section.Filters], Source={StaticResource Loc}}" Style="{StaticResource SectionTitleStyle}"/>
+                    <TextBlock Text="{Binding [Label.Search], Source={StaticResource Loc}}" Style="{StaticResource LabelStyle}"/>
                     <TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource DarkInputStyle}"
                              Margin="0,0,0,12"/>
-                    <TextBlock Text="Category" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Text="{Binding [Label.Category], Source={StaticResource Loc}}" Style="{StaticResource LabelStyle}"/>
                     <ComboBox ItemsSource="{Binding Categories}"
                               SelectedItem="{Binding FilterCategory}"
-                              Style="{StaticResource DarkComboStyle}"/>
+                              Style="{StaticResource DarkComboStyle}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate><TextBlock Text="{Binding Converter={StaticResource CategoryNameConverter}}"/></DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                 </StackPanel>
             </Border>
         </Grid>
 
-        <!-- Transactions DataGrid -->
         <Border Grid.Row="2" Style="{StaticResource GlassCardStyle}" Padding="0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -121,8 +125,8 @@
                         BorderThickness="0,0,0,1"
                         BorderBrush="{DynamicResource BorderBrush}">
                     <Grid>
-                        <TextBlock Text="📋 Transaction list" Style="{StaticResource SectionTitleStyle}" Margin="0"/>
-                        <Button Content="🗑 Delete selected"
+                        <TextBlock Text="{Binding [Section.TransactionList], Source={StaticResource Loc}}" Style="{StaticResource SectionTitleStyle}" Margin="0"/>
+                        <Button Content="{Binding [Btn.DeleteSelected], Source={StaticResource Loc}}"
                                 Command="{Binding DeleteTransactionCommand}"
                                 Style="{StaticResource DangerButtonStyle}"
                                 Padding="14,7" FontSize="12"
@@ -141,20 +145,25 @@
                           SelectionMode="Single"
                           Margin="0,0,0,0">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Date"
-                                            Binding="{Binding Date, StringFormat=dd.MM.yyyy}"
-                                            Width="100"/>
-                        <DataGridTemplateColumn Header="Typ" Width="80">
+                        <DataGridTextColumn Binding="{Binding Date, StringFormat=dd.MM.yyyy}" Width="100">
+                            <DataGridTextColumn.Header>
+                                <TextBlock Text="{Binding [Tx.DataGridDate], Source={StaticResource Loc}}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
+                        <DataGridTemplateColumn Width="80">
+                            <DataGridTemplateColumn.Header>
+                                <TextBlock Text="{Binding [Tx.DataGridType], Source={StaticResource Loc}}"/>
+                            </DataGridTemplateColumn.Header>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock>
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
-                                                <Setter Property="Text" Value="📉 Expense"/>
+                                                <Setter Property="Text" Value="{Binding [Tx.ExpenseRadio], Source={StaticResource Loc}}"/>
                                                 <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Type}" Value="Income">
-                                                        <Setter Property="Text" Value="📈 Income"/>
+                                                        <Setter Property="Text" Value="{Binding [Tx.IncomeRadio], Source={StaticResource Loc}}"/>
                                                         <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
@@ -164,13 +173,35 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Category" Binding="{Binding CategoryName}" Width="*"/>
-                        <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*"/>
-                        <DataGridTemplateColumn Header="Amount" Width="120">
+                        <DataGridTemplateColumn Width="*">
+                            <DataGridTemplateColumn.Header>
+                                <TextBlock Text="{Binding [Tx.DataGridCategory], Source={StaticResource Loc}}"/>
+                            </DataGridTemplateColumn.Header>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Amount, StringFormat={}{0:N2} zł}"
-                                               FontWeight="SemiBold">
+                                    <TextBlock Text="{Binding CategoryName, Converter={StaticResource CategoryNameConverter}}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Binding="{Binding Note}" Width="2*">
+                            <DataGridTextColumn.Header>
+                                <TextBlock Text="{Binding [Tx.DataGridNote], Source={StaticResource Loc}}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
+                        <DataGridTemplateColumn Width="120">
+                            <DataGridTemplateColumn.Header>
+                                <TextBlock Text="{Binding [Tx.DataGridAmount], Source={StaticResource Loc}}"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock FontWeight="SemiBold">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource MoneyDisplayConverter}">
+                                                <Binding Path="Amount"/>
+                                                <Binding Source="{x:Static svc:PrivacyService.Current}" Path="IsPrivate"/>
+                                                <Binding Source="{x:Static svc:CurrencyDisplayService.Current}" Path="SelectedCurrency"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
@@ -189,11 +220,10 @@
                 </DataGrid>
             </Grid>
         </Border>
-        <!-- Recurring Transactions -->
         <Border Grid.Row="3" Style="{StaticResource GlassCardStyle}" Margin="0,16,0,0">
             <Expander Foreground="{DynamicResource TextPrimaryBrush}" IsExpanded="False">
                 <Expander.Header>
-                    <TextBlock Text="&#x1F501; Recurring transactions" FontSize="14" FontWeight="SemiBold"
+                    <TextBlock Text="{Binding [Section.RecurringTx], Source={StaticResource Loc}}" FontSize="14" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextPrimaryBrush}"/>
                 </Expander.Header>
                 <Grid Margin="0,16,0,0">
@@ -202,7 +232,6 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Add recurring form -->
                     <Grid Grid.Row="0" Margin="0,0,0,14">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -219,26 +248,30 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Amount (PLN)" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Text="{Binding Source={x:Static svc:CurrencyDisplayService.Current}, Path=AmountLabel}" Style="{StaticResource LabelStyle}"/>
                             <TextBox Text="{Binding NewRecurringAmount, StringFormat={}{0:N2}, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource DarkInputStyle}"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="Category" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Text="{Binding [Label.Category], Source={StaticResource Loc}}" Style="{StaticResource LabelStyle}"/>
                             <ComboBox ItemsSource="{Binding Categories}"
                                       SelectedItem="{Binding NewRecurringCategory}"
-                                      Style="{StaticResource DarkComboStyle}"/>
+                                      Style="{StaticResource DarkComboStyle}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate><TextBlock Text="{Binding Converter={StaticResource CategoryNameConverter}}"/></DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                         </StackPanel>
 
                         <StackPanel Grid.Column="4">
-                            <TextBlock Text="Note" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Text="{Binding [Label.Note], Source={StaticResource Loc}}" Style="{StaticResource LabelStyle}"/>
                             <TextBox Text="{Binding NewRecurringNote, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource DarkInputStyle}"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="6">
-                            <TextBlock Text="Day (1-28)" Style="{StaticResource LabelStyle}"/>
+                            <TextBlock Text="{Binding [Label.DayRange], Source={StaticResource Loc}}" Style="{StaticResource LabelStyle}"/>
                             <TextBox Text="{Binding NewRecurringDay, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource DarkInputStyle}"/>
                         </StackPanel>
@@ -246,22 +279,21 @@
                         <StackPanel Grid.Column="8" VerticalAlignment="Bottom">
                             <Border Style="{StaticResource TagStyle}">
                                 <StackPanel Orientation="Horizontal">
-                                    <RadioButton Content="Expense" IsChecked="{Binding NewRecurringIsExpense}"
+                                    <RadioButton Content="{Binding [Tx.Expense], Source={StaticResource Loc}}" IsChecked="{Binding NewRecurringIsExpense}"
                                                  Foreground="{StaticResource DangerBrush}" Margin="0,0,8,0"/>
-                                    <RadioButton Content="Income" IsChecked="{Binding NewRecurringIsIncome}"
+                                    <RadioButton Content="{Binding [Tx.Income], Source={StaticResource Loc}}" IsChecked="{Binding NewRecurringIsIncome}"
                                                  Foreground="{StaticResource SuccessBrush}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
                         <Button Grid.Column="10"
-                                Content="Add"
+                                Content="{Binding [Btn.Add], Source={StaticResource Loc}}"
                                 Command="{Binding AddRecurringCommand}"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 VerticalAlignment="Bottom"/>
                     </Grid>
 
-                    <!-- Recurring list -->
                     <DataGrid Grid.Row="1"
                               ItemsSource="{Binding RecurringItems}"
                               Style="{StaticResource DarkDataGridStyle}"
@@ -269,11 +301,36 @@
                               CanUserReorderColumns="False" CanUserResizeRows="False"
                               MaxHeight="180">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Category" Binding="{Binding CategoryName}" Width="*"/>
-                            <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="2*"/>
-                            <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat={}{0:N2} PLN}" Width="120"/>
-                            <DataGridTextColumn Header="Type" Binding="{Binding TypeLabel}" Width="80"/>
-                            <DataGridTextColumn Header="Day" Binding="{Binding DayOfMonth}" Width="50"/>
+                            <DataGridTemplateColumn Width="*">
+                                <DataGridTemplateColumn.Header>
+                                    <TextBlock Text="{Binding [Tx.DataGridCategory], Source={StaticResource Loc}}"/>
+                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding CategoryName, Converter={StaticResource CategoryNameConverter}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Binding="{Binding Note}" Width="2*">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock Text="{Binding [Tx.DataGridNote], Source={StaticResource Loc}}"/>
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding Amount, StringFormat={}{0:N2} PLN}" Width="120">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock Text="{Binding [Tx.DataGridAmount], Source={StaticResource Loc}}"/>
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding TypeLabel}" Width="80">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock Text="{Binding [Tx.DataGridType], Source={StaticResource Loc}}"/>
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding DayOfMonth}" Width="50">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock Text="{Binding [Tx.DataGridDay], Source={StaticResource Loc}}"/>
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
                             <DataGridTemplateColumn Header="" Width="50">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

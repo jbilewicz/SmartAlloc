@@ -4,8 +4,11 @@ using SmartAlloc.Data;
 using SmartAlloc.Services;
 using SmartAlloc.ViewModels;
 using System.ComponentModel;
+using System.Drawing;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Media.Effects;
 using System.Windows.Threading;
 
 namespace SmartAlloc.Views;
@@ -13,8 +16,11 @@ namespace SmartAlloc.Views;
 public partial class MainWindow : Window
 {
     private DispatcherTimer? _autoLockTimer;
+    private DispatcherTimer? _reminderTimer;
     private int _autoLockMinutes;
     private bool _isAutoLock;
+    private NotifyIcon? _trayIcon;
+    private bool _isTrayClose;
 
     public MainWindow()
     {
@@ -22,6 +28,76 @@ public partial class MainWindow : Window
 
         PreviewMouseMove += (_, _) => ResetAutoLockTimer();
         PreviewMouseDown += (_, _) => ResetAutoLockTimer();
+
+        InitTrayIcon();
+
+        _reminderTimer = new DispatcherTimer { Interval = TimeSpan.FromHours(1) };
+        _reminderTimer.Tick += (_, _) =>
+        {
+            try
+            {
+                var rs = App.Services.GetRequiredService<ReminderService>();
+                rs.CheckReminders();
+            }
+            catch { }
+        };
+        _reminderTimer.Start();
+    }
+
+    private void InitTrayIcon()
+    {
+        var contextMenu = new ContextMenuStrip();
+        contextMenu.Items.Add("💰 SmartAlloc – Open", null, (_, _) => RestoreFromTray());
+        contextMenu.Items.Add(new ToolStripSeparator());
+        contextMenu.Items.Add("❌ Exit", null, (_, _) => ExitApp());
+
+        var iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "SmartAlloc.ico");
+        var appIcon = System.IO.File.Exists(iconPath)
+            ? new Icon(iconPath)
+            : SystemIcons.Application;
+
+        _trayIcon = new NotifyIcon
+        {
+            Text        = "SmartAlloc – Personal Finance",
+            Visible     = true,
+            Icon        = appIcon,
+            ContextMenuStrip = contextMenu
+        };
+        _trayIcon.DoubleClick += (_, _) => RestoreFromTray();
+
+        try
+        {
+            var rs = App.Services.GetRequiredService<ReminderService>();
+            rs.SetTrayIcon(_trayIcon);
+        }
+        catch { }
+    }
+
+    private void RestoreFromTray()
+    {
+        Show();
+        WindowState = WindowState.Normal;
+        Activate();
+        _trayIcon!.ShowBalloonTip(1500, "SmartAlloc",
+            LocalizationService.Current.Get("Tray.WelcomeBack"), ToolTipIcon.None);
+    }
+
+    private void ExitApp()
+    {
+        _isTrayClose = true;
+        _trayIcon?.Dispose();
+        _trayIcon = null;
+        System.Windows.Application.Current.Shutdown();
+    }
+
+    public static void SetBlur(bool enabled)
+    {
+        if (System.Windows.Application.Current.MainWindow is MainWindow mw)
+        {
+            mw.MainContent.Effect = enabled
+                ? new BlurEffect { Radius = 8, KernelType = KernelType.Gaussian }
+                : null;
+        }
     }
 
     public void Initialize(MainViewModel mainVM)
@@ -69,6 +145,13 @@ public partial class MainWindow : Window
                         var snackSvc = App.Services.GetRequiredService<SnackbarService>();
                         snackSvc.ShowSuccess($"{processed} recurring transaction{(processed > 1 ? "s" : "")} added.");
                     }
+
+                    try
+                    {
+                        var rs = App.Services.GetRequiredService<ReminderService>();
+                        rs.CheckReminders();
+                    }
+                    catch { }
                 }
             }
             else
@@ -181,6 +264,12 @@ public partial class MainWindow : Window
                     WindowState = WindowState.Minimized;
                     e.Handled = true;
                     break;
+
+                case Key.I:
+                    if (DataContext is MainViewModel mvm2)
+                        mvm2.TogglePrivacyCommand.Execute(null);
+                    e.Handled = true;
+                    break;
             }
         }
     }
@@ -213,6 +302,35 @@ public partial class MainWindow : Window
             : WindowState.Maximized;
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
-        => Close();
-}
+    {
+        var loc = SmartAlloc.Services.LocalizationService.Current;
+        var result = System.Windows.MessageBox.Show(
+            loc.Get("Tray.CloseMessage"),
+            loc.Get("Tray.CloseTitle"),
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
 
+        if (result == MessageBoxResult.Yes)
+        {
+            Hide();
+            _trayIcon?.ShowBalloonTip(3000, "SmartAlloc",
+                $"{loc.Get("Tray.Running")} – {loc.Get("Tray.RunningHint")}", ToolTipIcon.Info);
+        }
+        else
+        {
+            ExitApp();
+        }
+    }
+
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        if (!_isTrayClose)
+        {
+            // Window X button or Alt+F4 – treat same as CloseButton
+            e.Cancel = true;
+            CloseButton_Click(this, new RoutedEventArgs());
+            return;
+        }
+        base.OnClosing(e);
+    }
+}

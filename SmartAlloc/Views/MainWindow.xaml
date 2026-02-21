@@ -1,4 +1,4 @@
-﻿<Window x:Class="SmartAlloc.Views.MainWindow"
+<Window x:Class="SmartAlloc.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:SmartAlloc.ViewModels"
@@ -13,7 +13,6 @@
         Background="Transparent"
         PreviewKeyDown="Window_KeyDown">
 
-    <!-- Keyboard shortcuts -->
     <Window.InputBindings>
         <KeyBinding Gesture="Ctrl+1" Command="{Binding NavigateToDashboardCommand}"/>
         <KeyBinding Gesture="Ctrl+2" Command="{Binding NavigateToTransactionsCommand}"/>
@@ -21,9 +20,11 @@
         <KeyBinding Gesture="Ctrl+4" Command="{Binding NavigateToGoalsCommand}"/>
         <KeyBinding Gesture="Ctrl+5" Command="{Binding NavigateToStatisticsCommand}"/>
         <KeyBinding Gesture="Ctrl+6" Command="{Binding NavigateToSettingsCommand}"/>
+        <KeyBinding Gesture="Ctrl+7" Command="{Binding NavigateToCalendarCommand}"/>
         <KeyBinding Gesture="Ctrl+N" Command="{Binding NavigateToTransactionsCommand}"/>
         <KeyBinding Gesture="Ctrl+R" Command="{Binding GenerateReportCommand}"/>
         <KeyBinding Gesture="Ctrl+T" Command="{Binding ToggleThemeCommand}"/>
+        <KeyBinding Gesture="Ctrl+I" Command="{Binding TogglePrivacyCommand}"/>
     </Window.InputBindings>
 
     <Window.Resources>
@@ -47,8 +48,10 @@
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
             <views:SettingsView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CalendarViewModel}">
+            <views:CalendarView/>
+        </DataTemplate>
 
-        <!-- Base title bar button style – flat, no MD chrome -->
         <Style x:Key="TitleBarButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="40"/>
             <Setter Property="Height" Value="28"/>
@@ -81,7 +84,6 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Close button – inherits base, red on hover -->
         <Style x:Key="TitleBarCloseButtonStyle" TargetType="Button"
                BasedOn="{StaticResource TitleBarButtonStyle}">
             <Style.Triggers>
@@ -100,7 +102,6 @@
         <Border.Effect>
             <DropShadowEffect BlurRadius="40" ShadowDepth="0" Color="#000000" Opacity="0.6"/>
         </Border.Effect>
-        <!-- Wrapper grid to allow login overlay on top -->
         <Grid>
             <Grid x:Name="MainContent">
                 <Grid.Background>
@@ -111,7 +112,6 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-            <!-- Sidebar -->
             <Border Grid.Column="0" Background="{DynamicResource SidebarGradientBrush}">
                 <Border.BorderBrush>
                     <SolidColorBrush Color="{DynamicResource BorderColor}"/>
@@ -124,7 +124,6 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Logo area -->
                     <Border Grid.Row="0" Padding="20,24,20,20">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
@@ -144,9 +143,8 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Navigation -->
                     <StackPanel Grid.Row="1" Margin="12,8">
-                        <TextBlock Text="MENU" FontSize="10" FontWeight="SemiBold"
+                        <TextBlock Text="{Binding NavMenu}" FontSize="10" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextMutedBrush}"
                                    Margin="12,0,0,10"/>
 
@@ -155,7 +153,7 @@
                                 x:Name="BtnDashboard">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="📊" FontSize="16" Margin="0,0,12,0"/>
-                                <TextBlock Text="Dashboard" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding DataContext.NavDashboard, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="13" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
@@ -164,7 +162,7 @@
                                 Margin="0,4,0,0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="💸" FontSize="16" Margin="0,0,12,0"/>
-                                <TextBlock Text="Transactions" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding DataContext.NavTransactions, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="13" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
@@ -173,7 +171,7 @@
                                 Margin="0,4,0,0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="📋" FontSize="16" Margin="0,0,12,0"/>
-                                <TextBlock Text="Budgets" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding DataContext.NavBudgets, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="13" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
@@ -182,7 +180,7 @@
                                 Margin="0,4,0,0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="🎯" FontSize="16" Margin="0,0,12,0"/>
-                                <TextBlock Text="Goals" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding DataContext.NavGoals, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="13" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
@@ -191,7 +189,16 @@
                                 Margin="0,4,0,0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="📈" FontSize="16" Margin="0,0,12,0"/>
-                                <TextBlock Text="Statistics" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding DataContext.NavStatistics, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="13" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding NavigateToCalendarCommand}"
+                                Style="{StaticResource NavButtonStyle}"
+                                Margin="0,4,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📅" FontSize="16" Margin="0,0,12,0"/>
+                                <TextBlock Text="{Binding DataContext.NavCalendar, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="13" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
@@ -201,7 +208,7 @@
                                 Style="{StaticResource NavButtonStyle}">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="📄" FontSize="16" Margin="0,0,12,0"/>
-                                <TextBlock Text="PDF Report" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding DataContext.NavPdfReport, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="13" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
@@ -212,17 +219,15 @@
                                 Margin="0,0,0,0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="⚙️" FontSize="16" Margin="0,0,12,0"/>
-                                <TextBlock Text="Settings" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding DataContext.NavSettings, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="13" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
 
-                    <!-- Bottom info -->
                     <Border Grid.Row="2" Padding="16,14"
                             BorderThickness="0,1,0,0"
                             BorderBrush="{DynamicResource BorderBrush}">
                         <StackPanel>
-                            <!-- Current user -->
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                                 <Border Width="32" Height="32" CornerRadius="16"
                                         Background="#3A3A5A" ClipToBounds="True" Margin="0,0,10,0">
@@ -238,6 +243,15 @@
                                            VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
                                            MaxWidth="120"/>
                             </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="💱" FontSize="13" VerticalAlignment="Center" Margin="4,0,8,0"
+                                           Foreground="{DynamicResource TextMutedBrush}"/>
+                                <ComboBox ItemsSource="{Binding CurrencyDisplay.AvailableCurrencies}"
+                                          SelectedItem="{Binding CurrencyDisplay.SelectedCurrency}"
+                                          Style="{StaticResource DarkComboStyle}"
+                                          Width="90" Padding="8,5" FontSize="12"/>
+                            </StackPanel>
+
                             <Button Command="{Binding ToggleThemeCommand}"
                                     Style="{StaticResource NavButtonStyle}"
                                     Margin="-4,0,0,4">
@@ -251,7 +265,7 @@
                                     Margin="-4,0,0,10">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="🚪" FontSize="15" Margin="0,0,10,0"/>
-                                    <TextBlock Text="Log Out" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding DataContext.NavLogOut, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="13" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                             <TextBlock Text="SmartAlloc v1.0" FontSize="11"
@@ -264,24 +278,46 @@
                 </Grid>
             </Border>
 
-            <!-- Main content -->
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="44"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Custom title bar -->
                 <Border Grid.Row="0"
                         Background="{DynamicResource SurfaceBrush}"
                         MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
                     <Grid Margin="16,0">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                                     VerticalAlignment="Center">
+                            <Button Command="{Binding TogglePrivacyCommand}"
+                                    ToolTip="{Binding [Shortcut.PrivacyTip], Source={StaticResource Loc}}">
+                                <Grid Width="16" Height="16">
+                                    <TextBlock Text="&#xE7B3;" FontFamily="Segoe MDL2 Assets" FontSize="14"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                    <Line X1="2" Y1="14" X2="14" Y2="2" StrokeThickness="2"
+                                          Visibility="{Binding Privacy.IsPrivate, Converter={StaticResource BoolToVisConverter}}">
+                                        <Line.Stroke>
+                                            <SolidColorBrush Color="#F39C12"/>
+                                        </Line.Stroke>
+                                    </Line>
+                                </Grid>
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource TitleBarButtonStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Privacy.IsPrivate}" Value="True">
+                                                <Setter Property="Background" Value="#30F39C12"/>
+                                                <Setter Property="Foreground" Value="#F39C12"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
                             <Button Content="?"
                                     Style="{StaticResource TitleBarButtonStyle}"
                                     Click="HelpButton_Click"
-                                    ToolTip="Keyboard shortcuts (F1)"
+                                    ToolTip="{Binding [Shortcut.ShortcutsTip], Source={StaticResource Loc}}"
                                     FontWeight="Bold"/>
                             <Button Content="─"
                                     Style="{StaticResource TitleBarButtonStyle}"
@@ -297,7 +333,6 @@
                     </Grid>
                 </Border>
 
-                <!-- View content with fade animation -->
                 <ContentControl Grid.Row="1"
                                 Content="{Binding CurrentView}"
                                 Margin="0">
@@ -318,7 +353,6 @@
                     </ContentControl.Style>
                 </ContentControl>
 
-                <!-- Snackbar -->
                 <materialDesign:Snackbar Grid.Row="1"
                                          x:Name="SnackbarElement"
                                          MessageQueue="{materialDesign:MessageQueue}"
@@ -328,7 +362,6 @@
             </Grid>
             </Grid>
 
-        <!-- Shortcuts overlay (F1 / ? button) -->
         <Border x:Name="ShortcutsOverlay" Visibility="Collapsed"
                 Background="#CC000000" CornerRadius="16">
             <Border Background="{DynamicResource CardBrush}"
@@ -340,13 +373,12 @@
                 </Border.Effect>
                 <StackPanel>
 
-                    <!-- Header -->
                     <Grid Margin="0,0,0,20">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⌨️" FontSize="22" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Keyboard Shortcuts" FontSize="18" FontWeight="Bold"
+                            <TextBlock Text="{Binding [Shortcut.Title], Source={StaticResource Loc}}" FontSize="18" FontWeight="Bold"
                                        Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="  — press F1 or Esc to close" FontSize="11"
+                            <TextBlock Text="{Binding [Shortcut.CloseHint], Source={StaticResource Loc}}" FontSize="11"
                                        Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
                         <Button Content="✕" HorizontalAlignment="Right" VerticalAlignment="Center"
@@ -356,79 +388,74 @@
                                 Click="CloseShortcuts_Click"/>
                     </Grid>
 
-                    <!-- NAVIGATION -->
-                    <TextBlock Text="NAVIGATION" FontSize="10" FontWeight="SemiBold"
+                    <TextBlock Text="{Binding [Shortcut.Navigation], Source={StaticResource Loc}}" FontSize="10" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
                     <Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+1" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Dashboard" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Nav.Dashboard], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+2" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Transactions" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Nav.Transactions], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+3" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Budgets" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Nav.Budgets], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+4" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Goals" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Nav.Goals], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+5" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Statistics" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Nav.Statistics], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+6" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Settings" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Nav.Settings], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
 
-                    <!-- ACTIONS -->
-                    <TextBlock Text="ACTIONS" FontSize="10" FontWeight="SemiBold"
+                    <TextBlock Text="{Binding [Shortcut.Actions], Source={StaticResource Loc}}" FontSize="10" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
                     <Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+N" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="New Transaction (go to Transactions)" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.NewTx], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+R" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Generate PDF Report" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.GenPdf], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+T" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Toggle Light / Dark theme" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.ToggleTheme], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+L" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Lock screen now" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.LockScreen], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Ctrl+W" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Minimize window" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.Minimize], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
 
-                    <!-- GENERAL -->
-                    <TextBlock Text="GENERAL" FontSize="10" FontWeight="SemiBold"
+                    <TextBlock Text="{Binding [Shortcut.General], Source={StaticResource Loc}}" FontSize="10" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
                     <Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="F1" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Show / hide this shortcuts overlay" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.ToggleOverlay], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="10,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" HorizontalAlignment="Left"><TextBlock Text="Esc" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource AccentBrush}"/></Border>
-                        <TextBlock Grid.Column="1" Text="Close overlay  /  go to Dashboard" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Shortcut.CloseOverlay], Source={StaticResource Loc}}" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
 
                 </StackPanel>
             </Border>
         </Border>
 
-        <!-- Login overlay -->
         <Border x:Name="LoginOverlay" Visibility="Collapsed"
                 Background="#F0000000" CornerRadius="16">
             <Grid>
-                <!-- Title bar for login screen -->
                 <Border Height="44" VerticalAlignment="Top"
                         Background="Transparent"
                         MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
