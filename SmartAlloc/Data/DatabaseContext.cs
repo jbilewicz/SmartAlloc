@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.Sqlite;
 using SmartAlloc.Models;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace SmartAlloc.Data;
 
@@ -9,10 +10,36 @@ public class DatabaseContext : IDisposable
     private readonly string _connectionString;
     private SqliteConnection? _connection;
 
-    private const string DbPassword = "SmartAlloc@AES256#SecureKey!2026";
-    public static readonly string DbPath = Path.Combine(
+    private static readonly string _appDataDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "SmartAlloc", "SmartAlloc.db");
+        "SmartAlloc");
+
+    public static readonly string DbPath = Path.Combine(_appDataDir, "SmartAlloc.db");
+
+    /// <summary>
+    /// Zwraca hasło do bazy danych. Przy pierwszym uruchomieniu generuje losowy klucz,
+    /// szyfruje go via DPAPI (zakres: bieżący użytkownik Windows) i zapisuje jako db.key.
+    /// Przy kolejnych uruchomieniach odczytuje i odszyfrowuje ten plik.
+    /// </summary>
+    private static string GetOrCreateDbPassword()
+    {
+        var keyPath = Path.Combine(_appDataDir, "db.key");
+        Directory.CreateDirectory(_appDataDir);
+
+        if (File.Exists(keyPath))
+        {
+            var encrypted = File.ReadAllBytes(keyPath);
+            var raw = ProtectedData.Unprotect(encrypted, null, DataProtectionScope.CurrentUser);
+            return Convert.ToBase64String(raw);
+        }
+        else
+        {
+            var raw = RandomNumberGenerator.GetBytes(32);
+            var encrypted = ProtectedData.Protect(raw, null, DataProtectionScope.CurrentUser);
+            File.WriteAllBytes(keyPath, encrypted);
+            return Convert.ToBase64String(raw);
+        }
+    }
 
     public DatabaseContext()
     {
@@ -21,7 +48,7 @@ public class DatabaseContext : IDisposable
         _connectionString = new SqliteConnectionStringBuilder
         {
             DataSource = DbPath,
-            Password = DbPassword,
+            Password = GetOrCreateDbPassword(),
             Mode = SqliteOpenMode.ReadWriteCreate
         }.ToString();
 
